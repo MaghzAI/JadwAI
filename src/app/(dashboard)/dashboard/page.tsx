@@ -2,6 +2,8 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import StatsOverview from '@/components/dashboard/StatsOverview';
+import RecentActivity from '@/components/dashboard/RecentActivity';
 import { 
   FolderOpen, 
   FileText, 
@@ -13,39 +15,89 @@ import {
   CheckCircle2
 } from 'lucide-react';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 
 export default function DashboardPage() {
+  const [loading, setLoading] = useState(true);
+  
   // Mock data - في المستقبل سيتم جلبها من API
-  const stats = [
+  const statsData = {
+    totalProjects: 15,
+    totalStudies: 23,
+    completedProjects: 12,
+    completedStudies: 18,
+    totalInvestment: 2500000,
+    totalRevenue: 4200000,
+    activeUsers: 8,
+    thisMonthProjects: 3,
+    thisMonthStudies: 5,
+    averageROI: 24.5,
+    currency: 'SAR'
+  };
+
+  const recentActivities = [
     {
-      title: 'إجمالي المشاريع',
-      value: '12',
-      description: '+2 هذا الشهر',
-      icon: FolderOpen,
-      trend: '+15%',
+      id: '1',
+      type: 'project' as const,
+      action: 'created' as const,
+      title: 'مطعم الأصالة العربية',
+      description: 'مشروع مطعم في حي الملك فهد',
+      user: { name: 'أحمد محمد', avatar: '' },
+      timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+      status: 'IN_PROGRESS' as const,
+      link: '/projects/1'
     },
     {
-      title: 'الدراسات المكتملة',
-      value: '8',
-      description: '+3 هذا الأسبوع',
-      icon: FileText,
-      trend: '+25%',
+      id: '2',
+      type: 'study' as const,
+      action: 'completed' as const,
+      title: 'دراسة جدوى متجر إلكتروني',
+      description: 'دراسة شاملة لمتجر الملابس الرجالية',
+      user: { name: 'فاطمة أحمد', avatar: '' },
+      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+      status: 'COMPLETED' as const,
+      link: '/studies/2'
     },
     {
-      title: 'قيد المراجعة',
-      value: '3',
-      description: 'منتظرة الموافقة',
-      icon: Clock,
-      trend: '0%',
+      id: '3',
+      type: 'project' as const,
+      action: 'updated' as const,
+      title: 'مركز التدريب التقني',
+      description: 'تحديث الميزانية والجدول الزمني',
+      user: { name: 'محمد عبدالله', avatar: '' },
+      timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+      status: 'IN_PROGRESS' as const,
+      link: '/projects/3'
     },
     {
-      title: 'معدل النجاح',
-      value: '85%',
-      description: 'من الدراسات المعتمدة',
-      icon: TrendingUp,
-      trend: '+5%',
+      id: '4',
+      type: 'study' as const,
+      action: 'created' as const,
+      title: 'دراسة سوق التطبيقات الذكية',
+      description: 'تحليل فرص الاستثمار في التطبيقات',
+      user: { name: 'سارة خالد', avatar: '' },
+      timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
+      status: 'DRAFT' as const,
+      link: '/studies/4'
     },
+    {
+      id: '5',
+      type: 'project' as const,
+      action: 'completed' as const,
+      title: 'مشروع الطاقة الشمسية',
+      description: 'محطة طاقة شمسية للمباني التجارية',
+      user: { name: 'علي حسن', avatar: '' },
+      timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+      status: 'COMPLETED' as const,
+      link: '/projects/5'
+    }
   ];
+
+  useEffect(() => {
+    // Simulate loading
+    const timer = setTimeout(() => setLoading(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const recentProjects = [
     {
@@ -90,23 +142,19 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8 p-6">
       {/* Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            لوحة التحكم
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            مرحباً بك في منصة دراسات الجدوى الذكية
-          </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8">
+        <div className="mb-4 sm:mb-0">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">لوحة التحكم</h1>
+          <p className="mt-1 sm:mt-2 text-sm sm:text-base text-gray-600 dark:text-gray-400">مرحباً بك في منصة دراسات الجدوى</p>
         </div>
-        <div className="flex gap-2">
-          <Button asChild>
+        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 sm:space-x-reverse">
+          <Button asChild className="w-full sm:w-auto">
             <Link href="/projects/new">
               <Plus className="ml-2 h-4 w-4" />
               مشروع جديد
             </Link>
           </Button>
-          <Button asChild variant="outline">
+          <Button asChild variant="outline" className="w-full sm:w-auto">
             <Link href="/studies/new">
               <FileText className="ml-2 h-4 w-4" />
               دراسة جديدة
@@ -115,71 +163,12 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat, index) => (
-          <Card key={index}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {stat.title}
-              </CardTitle>
-              <stat.icon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              <p className="text-xs text-muted-foreground">
-                {stat.description}
-              </p>
-              <div className="flex items-center text-xs text-green-600 dark:text-green-400 mt-1">
-                <TrendingUp className="h-3 w-3 ml-1" />
-                {stat.trend}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* Stats Overview */}
+      <StatsOverview data={statsData} loading={loading} />
 
       <div className="grid gap-6 md:grid-cols-2">
-        {/* Recent Projects */}
-        <Card>
-          <CardHeader>
-            <CardTitle>المشاريع الأخيرة</CardTitle>
-            <CardDescription>
-              آخر المشاريع التي تم العمل عليها
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {recentProjects.map((project) => (
-                <div key={project.id} className="flex items-center justify-between border-b border-gray-100 dark:border-gray-800 pb-3 last:border-0">
-                  <div className="space-y-1">
-                    <p className="font-medium text-sm">{project.name}</p>
-                    <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
-                      <span>{project.type}</span>
-                      <span>•</span>
-                      <span>ROI: {project.roi}</span>
-                    </div>
-                  </div>
-                  <div className="text-left space-y-1">
-                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(project.status)}`}>
-                      {project.status}
-                    </span>
-                    <p className="text-xs text-gray-500 dark:text-gray-400">
-                      {new Date(project.lastUpdated).toLocaleDateString('ar-SA')}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="mt-4">
-              <Button asChild variant="outline" className="w-full">
-                <Link href="/projects">
-                  عرض جميع المشاريع
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Recent Activity */}
+        <RecentActivity activities={recentActivities} loading={loading} />
 
         {/* Quick Actions */}
         <Card>

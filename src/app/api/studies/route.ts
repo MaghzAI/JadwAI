@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (projectId) {
-      where.projectId = parseInt(projectId);
+      where.projectId = projectId;
     }
 
     // Get total count
@@ -61,7 +61,6 @@ export async function GET(request: NextRequest) {
           select: {
             id: true,
             name: true,
-            type: true,
             industry: true,
           },
         },
@@ -133,7 +132,7 @@ export async function POST(request: NextRequest) {
     // Check if project exists and belongs to user
     const project = await prisma.project.findFirst({
       where: {
-        id: parseInt(projectId),
+        id: projectId,
         userId: session.user.id,
       },
     });
@@ -145,22 +144,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create study configuration
-    const configuration = {
-      language: language || 'ar',
-      aiModel: aiModel || 'gemini',
-      includeFinancialAnalysis: includeFinancialAnalysis !== false,
-      includeMarketAnalysis: includeMarketAnalysis !== false,
-      includeTechnicalAnalysis: includeTechnicalAnalysis !== false,
-      includeRiskAnalysis: includeRiskAnalysis !== false,
-      includeLegalAnalysis: includeLegalAnalysis === true,
-      includeEnvironmentalAnalysis: includeEnvironmentalAnalysis === true,
-      customPrompts: customPrompts || '',
-      reportFormat: reportFormat || 'detailed',
-      currency: currency || project.currency || 'SAR',
-      analysisDepth: analysisDepth || 'comprehensive',
-    };
-
     // Create feasibility study
     const study = await prisma.feasibilityStudy.create({
       data: {
@@ -168,15 +151,16 @@ export async function POST(request: NextRequest) {
         description: body.description || '',
         type,
         status: 'DRAFT',
-        projectId: parseInt(projectId),
-        configuration,
+        projectId: projectId,
+        userId: session.user.id,
+        language: language || 'ar',
+        aiModel: aiModel || 'gemini',
       },
       include: {
         project: {
           select: {
             id: true,
             name: true,
-            type: true,
             industry: true,
           },
         },

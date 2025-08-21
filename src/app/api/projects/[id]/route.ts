@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -17,9 +17,10 @@ export async function GET(
       );
     }
 
-    const projectId = parseInt(params.id);
+    const { id } = await params;
+    const projectId = id;
     
-    if (isNaN(projectId)) {
+    if (!projectId) {
       return NextResponse.json(
         { error: 'معرف المشروع غير صحيح' },
         { status: 400 }
@@ -32,7 +33,7 @@ export async function GET(
         userId: session.user.id,
       },
       include: {
-        feasibilityStudies: {
+        studies: {
           orderBy: {
             createdAt: 'desc',
           },
@@ -59,7 +60,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -71,9 +72,10 @@ export async function PUT(
       );
     }
 
-    const projectId = parseInt(params.id);
+    const { id } = await params;
+    const projectId = id;
     
-    if (isNaN(projectId)) {
+    if (!projectId) {
       return NextResponse.json(
         { error: 'معرف المشروع غير صحيح' },
         { status: 400 }
@@ -111,7 +113,7 @@ export async function PUT(
         updatedAt: new Date(),
       },
       include: {
-        feasibilityStudies: true,
+        studies: true,
       },
     });
 
@@ -127,7 +129,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -139,9 +141,10 @@ export async function DELETE(
       );
     }
 
-    const projectId = parseInt(params.id);
+    const { id } = await params;
+    const projectId = id;
     
-    if (isNaN(projectId)) {
+    if (!projectId) {
       return NextResponse.json(
         { error: 'معرف المشروع غير صحيح' },
         { status: 400 }

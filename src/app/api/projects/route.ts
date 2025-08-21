@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
-import { ProjectStatus, ProjectType } from '@prisma/client';
+import { ProjectStatus } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,7 +20,6 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10');
     const search = searchParams.get('search') || '';
     const status = searchParams.get('status') as ProjectStatus | 'all';
-    const type = searchParams.get('type') as ProjectType | 'all';
 
     // Build where clause
     const where: any = {
@@ -38,10 +37,6 @@ export async function GET(request: NextRequest) {
       where.status = status;
     }
 
-    if (type && type !== 'all') {
-      where.type = type;
-    }
-
     // Get total count
     const total = await prisma.project.count({ where });
 
@@ -49,11 +44,14 @@ export async function GET(request: NextRequest) {
     const projects = await prisma.project.findMany({
       where,
       include: {
-        feasibilityStudies: {
+        studies: {
           select: {
             id: true,
             status: true,
             createdAt: true,
+          },
+          orderBy: {
+            createdAt: 'desc',
           },
         },
       },
@@ -99,22 +97,12 @@ export async function POST(request: NextRequest) {
     const {
       name,
       description,
-      type,
       industry,
       location,
       currency,
-      initialInvestment,
-      expectedRevenue,
-      targetMarket,
-      projectDuration,
-      teamSize,
-      businessModel,
-      competitiveAdvantage,
-      risks,
-      successMetrics,
     } = body;
 
-    if (!name || !type || !industry) {
+    if (!name || !industry) {
       return NextResponse.json(
         { error: 'البيانات المطلوبة مفقودة' },
         { status: 400 }
@@ -126,24 +114,15 @@ export async function POST(request: NextRequest) {
       data: {
         name,
         description,
-        type,
         industry,
         location,
         currency: currency || 'SAR',
-        initialInvestment: initialInvestment ? parseFloat(initialInvestment) : null,
-        expectedRevenue: expectedRevenue ? parseFloat(expectedRevenue) : null,
-        targetMarket,
-        projectDuration: projectDuration ? parseInt(projectDuration) : null,
-        teamSize: teamSize ? parseInt(teamSize) : null,
-        businessModel,
-        competitiveAdvantage,
-        risks,
-        successMetrics,
-        status: 'PLANNING',
+        // Note: Additional project fields will be added to schema later
+        status: ProjectStatus.DRAFT,
         userId: session.user.id,
       },
       include: {
-        feasibilityStudies: true,
+        studies: true,
       },
     });
 

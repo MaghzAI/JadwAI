@@ -5,7 +5,7 @@ import { prisma } from '@/lib/prisma';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -17,9 +17,10 @@ export async function GET(
       );
     }
 
-    const studyId = parseInt(params.id);
+    const { id } = await params;
+    const studyId = id;
     
-    if (isNaN(studyId)) {
+    if (!studyId) {
       return NextResponse.json(
         { error: 'معرف الدراسة غير صحيح' },
         { status: 400 }
@@ -57,7 +58,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -69,9 +70,10 @@ export async function PUT(
       );
     }
 
-    const studyId = parseInt(params.id);
+    const { id } = await params;
+    const studyId = id;
     
-    if (isNaN(studyId)) {
+    if (!studyId) {
       return NextResponse.json(
         { error: 'معرف الدراسة غير صحيح' },
         { status: 400 }
@@ -123,7 +125,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -135,9 +137,10 @@ export async function DELETE(
       );
     }
 
-    const studyId = parseInt(params.id);
+    const { id } = await params;
+    const studyId = id;
     
-    if (isNaN(studyId)) {
+    if (!studyId) {
       return NextResponse.json(
         { error: 'معرف الدراسة غير صحيح' },
         { status: 400 }

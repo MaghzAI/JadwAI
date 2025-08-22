@@ -58,10 +58,15 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  accounts      Account[]
-  sessions      Session[]
-  projects      Project[]
-  studies       FeasibilityStudy[]
+  accounts         Account[]
+  sessions         Session[]
+  projects         Project[]
+  studies          FeasibilityStudy[]
+  assignedTasks    Task[]
+  teamMemberships  ProjectTeamMember[]
+  uploadedDocuments ProjectDocument[]
+  notifications    Notification[]
+  createdReports   FinancialReport[]
 
   @@map("users")
 }
@@ -87,8 +92,14 @@ model Project {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  user    User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  studies FeasibilityStudy[]
+  user       User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  studies    FeasibilityStudy[]
+  stages     ProjectStage[]
+  milestones Milestone[]
+  tasks      Task[]
+  teamMembers ProjectTeamMember[]
+  documents  ProjectDocument[]
+  financialReports FinancialReport[]
 
   @@map("projects")
 }
@@ -153,4 +164,185 @@ enum StudyStatus {
   COMPLETED
   REVIEWED
   PUBLISHED
+}
+
+// إضافة جداول جديدة للمرحلة الرابعة
+
+model ProjectStage {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  startDate   DateTime?
+  endDate     DateTime?
+  status      StageStatus @default(PENDING)
+  progress    Int      @default(0)
+  order       Int
+  projectId   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project     Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  milestones  Milestone[]
+  tasks       Task[]
+
+  @@map("project_stages")
+}
+
+model Milestone {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  dueDate     DateTime?
+  status      MilestoneStatus @default(PENDING)
+  stageId     String
+  projectId   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  stage       ProjectStage @relation(fields: [stageId], references: [id], onDelete: Cascade)
+  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("milestones")
+}
+
+model Task {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  status      TaskStatus @default(TODO)
+  priority    Priority   @default(MEDIUM)
+  dueDate     DateTime?
+  assigneeId  String?
+  stageId     String?
+  projectId   String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  assignee    User?        @relation(fields: [assigneeId], references: [id], onDelete: SetNull)
+  stage       ProjectStage? @relation(fields: [stageId], references: [id], onDelete: SetNull)
+  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@map("tasks")
+}
+
+model ProjectTeamMember {
+  id         String   @id @default(cuid())
+  projectId  String
+  userId     String
+  role       TeamRole @default(MEMBER)
+  joinedAt   DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  project    Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@map("project_team_members")
+}
+
+model ProjectDocument {
+  id          String       @id @default(cuid())
+  name        String
+  description String?
+  filePath    String
+  fileSize    Int
+  mimeType    String
+  category    DocumentCategory @default(OTHER)
+  projectId   String
+  uploadedBy  String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  project     Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  uploader    User    @relation(fields: [uploadedBy], references: [id], onDelete: Cascade)
+
+  @@map("project_documents")
+}
+
+model Notification {
+  id          String           @id @default(cuid())
+  title       String
+  message     String
+  type        NotificationType @default(INFO)
+  isRead      Boolean          @default(false)
+  userId      String
+  relatedId   String?
+  relatedType String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model FinancialReport {
+  id              String   @id @default(cuid())
+  title           String
+  reportType      String
+  data            Json
+  generatedAt     DateTime @default(now())
+  projectId       String
+  createdBy       String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  project         Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  creator         User    @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@map("financial_reports")
+}
+
+// Enums إضافية
+enum StageStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  DELAYED
+}
+
+enum MilestoneStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  OVERDUE
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum TeamRole {
+  OWNER
+  MANAGER
+  MEMBER
+  VIEWER
+}
+
+enum DocumentCategory {
+  PROPOSAL
+  CONTRACT
+  REPORT
+  PRESENTATION
+  IMAGE
+  OTHER
+}
+
+enum NotificationType {
+  INFO
+  WARNING
+  ERROR
+  SUCCESS
+  REMINDER
 }

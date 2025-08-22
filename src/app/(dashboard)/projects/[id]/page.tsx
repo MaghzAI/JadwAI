@@ -5,8 +5,15 @@ import { useParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { lazy, Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ProjectTimeline } from '@/components/projects/ProjectTimeline';
+import { ProjectStudyLinker } from '@/components/projects/ProjectStudyLinker';
+import { ROIAnalytics } from '@/components/analytics/ROIAnalytics';
+import { FinancialReports } from '@/components/reports/FinancialReports';
+import { ProjectFileManager } from '@/components/files/ProjectFileManager';
+import { ProjectTeamManager } from '@/components/teams/ProjectTeamManager';
 
 // Lazy load chart components for better performance
 const ROIChart = lazy(() => import('@/components/charts/ROIChart'));
@@ -79,6 +86,125 @@ export default function ProjectDetailPage() {
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState('overview');
+
+  // Mock data for advanced features
+  const mockStages = [
+    {
+      id: '1',
+      name: 'التخطيط والتحليل',
+      description: 'مرحلة التخطيط الأولي وتحليل السوق',
+      startDate: new Date('2024-01-01'),
+      endDate: new Date('2024-02-28'),
+      status: 'completed' as const,
+      progress: 100,
+      dependencies: [],
+      assignees: [{ id: '1', name: 'أحمد محمد' }],
+      milestones: [
+        { id: '1', name: 'تحليل السوق', date: new Date('2024-01-15'), completed: true },
+        { id: '2', name: 'دراسة المنافسين', date: new Date('2024-02-01'), completed: true }
+      ],
+      tasks: [
+        { id: '1', name: 'بحث السوق', completed: true, priority: 'high' as const },
+        { id: '2', name: 'تحليل المنافسين', completed: true, priority: 'medium' as const }
+      ],
+      budget: { allocated: 50000, spent: 45000 }
+    },
+    {
+      id: '2',
+      name: 'التطوير والتنفيذ',
+      description: 'بناء وتطوير المنتج أو الخدمة',
+      startDate: new Date('2024-03-01'),
+      endDate: new Date('2024-06-30'),
+      status: 'in_progress' as const,
+      progress: 65,
+      dependencies: ['1'],
+      assignees: [
+        { id: '2', name: 'فاطمة أحمد' },
+        { id: '3', name: 'محمد علي' }
+      ],
+      milestones: [
+        { id: '3', name: 'النموذج الأولي', date: new Date('2024-04-15'), completed: true },
+        { id: '4', name: 'الاختبار الأولي', date: new Date('2024-05-30'), completed: false }
+      ],
+      tasks: [
+        { id: '3', name: 'تطوير النموذج الأولي', completed: true, priority: 'high' as const },
+        { id: '4', name: 'اختبار الجودة', completed: false, priority: 'high' as const },
+        { id: '5', name: 'تحسينات الأداء', completed: false, priority: 'medium' as const }
+      ],
+      budget: { allocated: 150000, spent: 97500 }
+    }
+  ];
+
+  const mockStudies = [
+    {
+      id: '1',
+      title: 'دراسة الجدوى الاقتصادية الشاملة',
+      description: 'تحليل شامل للجدوى الاقتصادية والمالية للمشروع',
+      status: 'completed' as const,
+      createdAt: new Date('2024-01-15'),
+      updatedAt: new Date('2024-02-01'),
+      author: { id: '1', name: 'د. أحمد المالكي' },
+      category: 'مطاعم ومقاهي',
+      financialSummary: {
+        initialInvestment: 500000,
+        expectedRevenue: 1200000,
+        roi: 25.5,
+        paybackPeriod: 18
+      },
+      riskLevel: 'medium' as const,
+      recommendation: 'proceed' as const
+    }
+  ];
+
+  const mockROIData = [
+    {
+      projectId: params.id as string,
+      projectName: project?.name || 'المشروع الحالي',
+      initialInvestment: project?.initialInvestment || 500000,
+      currentValue: 650000,
+      totalReturns: 150000,
+      roi: 30,
+      roiCategory: 'good' as const,
+      paybackPeriod: 18,
+      npv: 85000,
+      irr: 22.5,
+      riskLevel: 'medium' as const,
+      cashFlowData: [
+        { month: 'يناير', inflow: 50000, outflow: 30000, netCashFlow: 20000, cumulativeCashFlow: 20000 },
+        { month: 'فبراير', inflow: 60000, outflow: 35000, netCashFlow: 25000, cumulativeCashFlow: 45000 },
+        { month: 'مارس', inflow: 70000, outflow: 40000, netCashFlow: 30000, cumulativeCashFlow: 75000 },
+        { month: 'أبريل', inflow: 80000, outflow: 45000, netCashFlow: 35000, cumulativeCashFlow: 110000 },
+        { month: 'مايو', inflow: 90000, outflow: 50000, netCashFlow: 40000, cumulativeCashFlow: 150000 },
+      ]
+    }
+  ];
+
+  const mockFinancialData = [
+    {
+      projectId: params.id as string,
+      projectName: project?.name || 'المشروع الحالي',
+      revenue: project?.expectedRevenue || 1200000,
+      expenses: 800000,
+      profit: 400000,
+      roi: 30,
+      cashFlow: [20000, 45000, 75000, 110000, 150000],
+      monthlyData: [
+        { month: 'يناير', revenue: 100000, expenses: 70000, profit: 30000 },
+        { month: 'فبراير', revenue: 110000, expenses: 75000, profit: 35000 },
+        { month: 'مارس', revenue: 120000, expenses: 80000, profit: 40000 },
+        { month: 'أبريل', revenue: 130000, expenses: 85000, profit: 45000 },
+        { month: 'مايو', revenue: 140000, expenses: 90000, profit: 50000 }
+      ],
+      categoryBreakdown: [
+        { category: 'الرواتب', amount: 300000, percentage: 37.5 },
+        { category: 'الإيجار', amount: 200000, percentage: 25 },
+        { category: 'المواد الخام', amount: 150000, percentage: 18.75 },
+        { category: 'التسويق', amount: 100000, percentage: 12.5 },
+        { category: 'أخرى', amount: 50000, percentage: 6.25 }
+      ]
+    }
+  ];
 
   useEffect(() => {
     const fetchProject = async () => {
@@ -220,38 +346,28 @@ export default function ProjectDetailPage() {
   const TypeIcon = typeInfo.icon;
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="container mx-auto px-4 py-8 space-y-6">
       {/* Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/projects">
-              <ArrowLeft className="h-4 w-4 ml-1" />
-              العودة للمشاريع
-            </Link>
+          <Button 
+            variant="ghost" 
+            size="sm"
+            onClick={() => router.back()}
+            className="flex items-center gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            العودة
           </Button>
           <div>
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                {project.name}
-              </h1>
-              <Badge className={statusInfo.color}>
-                <StatusIcon className="w-3 h-3 ml-1" />
-                {statusInfo.label}
-              </Badge>
-            </div>
-            <p className="text-gray-600 dark:text-gray-400">
-              {project.description}
-            </p>
+            <h1 className="text-3xl font-bold">{project.name}</h1>
+            <p className="text-muted-foreground">{project.description}</p>
           </div>
         </div>
-        
-        <div className="flex gap-2">
-          <Button asChild>
-            <Link href={`/projects/${project.id}/edit`}>
-              <Edit className="ml-2 h-4 w-4" />
-              تعديل
-            </Link>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm">
+            <Share className="h-4 w-4 mr-2" />
+            مشاركة
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -276,7 +392,20 @@ export default function ProjectDetailPage() {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      {/* Enhanced Project Content with Tabs */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-7">
+          <TabsTrigger value="overview">نظرة عامة</TabsTrigger>
+          <TabsTrigger value="timeline">الجدول الزمني</TabsTrigger>
+          <TabsTrigger value="studies">دراسات الجدوى</TabsTrigger>
+          <TabsTrigger value="roi">تحليل العائد</TabsTrigger>
+          <TabsTrigger value="financial">التقارير المالية</TabsTrigger>
+          <TabsTrigger value="documents">المستندات</TabsTrigger>
+          <TabsTrigger value="team">الفريق</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-6 mt-6">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {/* Project Overview */}
         <Card className="lg:col-span-2">
           <CardHeader>
@@ -571,6 +700,44 @@ export default function ProjectDetailPage() {
           </div>
         </CardContent>
       </Card>
+        </TabsContent>
+
+        <TabsContent value="timeline" className="space-y-6 mt-6">
+          <ProjectTimeline 
+            projectId={params.id as string}
+            stages={mockStages}
+          />
+        </TabsContent>
+
+        <TabsContent value="studies" className="space-y-6 mt-6">
+          <ProjectStudyLinker 
+            projectId={params.id as string}
+            linkedStudies={mockStudies}
+          />
+        </TabsContent>
+
+        <TabsContent value="roi" className="space-y-6 mt-6">
+          <ROIAnalytics data={mockROIData} />
+        </TabsContent>
+
+        <TabsContent value="financial" className="space-y-6 mt-6">
+          <FinancialReports data={mockFinancialData} />
+        </TabsContent>
+
+        <TabsContent value="documents" className="space-y-6 mt-6">
+          <ProjectFileManager 
+            projectId={params.id as string}
+            canEdit={true}
+          />
+        </TabsContent>
+
+        <TabsContent value="team" className="space-y-6 mt-6">
+          <ProjectTeamManager 
+            projectId={params.id as string}
+            canManage={true}
+          />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

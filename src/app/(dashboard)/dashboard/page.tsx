@@ -4,6 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import StatsOverview from '@/components/dashboard/StatsOverview';
 import RecentActivity from '@/components/dashboard/RecentActivity';
+import { ProjectStatsWidget } from '@/components/dashboard/widgets/ProjectStatsWidget';
+import { FinancialOverviewWidget } from '@/components/dashboard/widgets/FinancialOverviewWidget';
+import { RecentProjectsWidget } from '@/components/dashboard/widgets/RecentProjectsWidget';
+import { QuickActionsWidget } from '@/components/dashboard/widgets/QuickActionsWidget';
 import { 
   FolderOpen, 
   FileText, 
@@ -12,7 +16,8 @@ import {
   Plus,
   BarChart3,
   Clock,
-  CheckCircle2
+  CheckCircle2,
+  LayoutGrid
 } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
@@ -140,97 +145,55 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="space-y-8 p-6">
+    <div className="container mx-auto p-6 space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8">
-        <div className="mb-4 sm:mb-0">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">لوحة التحكم</h1>
-          <p className="mt-1 sm:mt-2 text-sm sm:text-base text-gray-600 dark:text-gray-400">مرحباً بك في منصة دراسات الجدوى</p>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            <LayoutGrid className="h-8 w-8" />
+            لوحة التحكم المتقدمة
+          </h1>
+          <p className="text-gray-600 dark:text-gray-300 mt-2">
+            نظرة شاملة على أداء مشاريعك والإحصائيات المالية
+          </p>
         </div>
-        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 sm:space-x-reverse">
-          <Button asChild className="w-full sm:w-auto">
+        <div className="flex gap-3 mt-4 md:mt-0">
+          <Button asChild>
             <Link href="/projects/new">
-              <Plus className="ml-2 h-4 w-4" />
+              <Plus className="w-4 h-4 ml-2" />
               مشروع جديد
             </Link>
           </Button>
-          <Button asChild variant="outline" className="w-full sm:w-auto">
+          <Button asChild variant="outline">
             <Link href="/studies/new">
-              <FileText className="ml-2 h-4 w-4" />
-              دراسة جديدة
+              <FileText className="w-4 h-4 ml-2" />
+              دراسة جدوى
             </Link>
           </Button>
         </div>
       </div>
 
-      {/* Stats Overview */}
-      <StatsOverview data={statsData} loading={loading} />
+      {/* New Advanced Dashboard Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left Column - Main Widgets */}
+        <div className="lg:col-span-8 space-y-6">
+          {/* Top Row - Key Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <ProjectStatsWidget />
+            <FinancialOverviewWidget />
+          </div>
+          
+          {/* Recent Projects */}
+          <RecentProjectsWidget />
+        </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Recent Activity */}
-        <RecentActivity activities={recentActivities} loading={loading} />
-
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>إجراءات سريعة</CardTitle>
-            <CardDescription>
-              الأدوات والميزات الأكثر استخداماً
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-3">
-              <Button asChild variant="outline" className="justify-start h-auto p-4">
-                <Link href="/projects/new">
-                  <FolderOpen className="ml-3 h-5 w-5" />
-                  <div className="text-right">
-                    <div className="font-medium">إنشاء مشروع جديد</div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400">
-                      ابدأ مشروعك وحدد أهدافك
-                    </div>
-                  </div>
-                </Link>
-              </Button>
-              
-              <Button asChild variant="outline" className="justify-start h-auto p-4">
-                <Link href="/studies/new">
-                  <FileText className="ml-3 h-5 w-5" />
-                  <div className="text-right">
-                    <div className="font-medium">دراسة جدوى جديدة</div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400">
-                      استخدم الذكاء الاصطناعي للتحليل
-                    </div>
-                  </div>
-                </Link>
-              </Button>
-              
-              <Button asChild variant="outline" className="justify-start h-auto p-4">
-                <Link href="/reports">
-                  <BarChart3 className="ml-3 h-5 w-5" />
-                  <div className="text-right">
-                    <div className="font-medium">التقارير والتحليلات</div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400">
-                      عرض الإحصائيات والنتائج
-                    </div>
-                  </div>
-                </Link>
-              </Button>
-              
-              <Button asChild variant="outline" className="justify-start h-auto p-4">
-                <Link href="/templates">
-                  <CheckCircle2 className="ml-3 h-5 w-5" />
-                  <div className="text-right">
-                    <div className="font-medium">القوالب الجاهزة</div>
-                    <div className="text-xs text-gray-600 dark:text-gray-400">
-                      قوالب معدة مسبقاً لقطاعات مختلفة
-                    </div>
-                  </div>
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Right Column - Quick Actions & Activity */}
+        <div className="lg:col-span-4 space-y-6">
+          <QuickActionsWidget />
+          <RecentActivity activities={recentActivities} loading={loading} />
+        </div>
       </div>
+
     </div>
   );
 }

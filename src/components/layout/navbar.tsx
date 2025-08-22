@@ -3,15 +3,10 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Menu, X, User, Settings, LogOut, Home, FolderOpen, FileText } from 'lucide-react';
+import { Button } from "@/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { User, Menu, X, Home, FolderOpen, FileText, Settings, LogOut } from "lucide-react";
+import { NotificationCenter } from "@/components/notifications/NotificationCenter";
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -62,36 +57,39 @@ export function Navbar() {
                 <div className="animate-pulse h-8 w-20 bg-gray-200 rounded"></div>
               </div>
             ) : session ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="flex items-center space-x-2 space-x-reverse">
-                    <User className="h-4 w-4" />
-                    <span className="hidden sm:inline">{session.user?.name || session.user?.email}</span>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem asChild>
-                    <Link href="/profile" className="flex items-center">
-                      <User className="ml-2 h-4 w-4" />
-                      <span>الملف الشخصي</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link href="/settings" className="flex items-center">
-                      <Settings className="ml-2 h-4 w-4" />
-                      <span>الإعدادات</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    className="flex items-center text-red-600 dark:text-red-400"
-                    onClick={() => signOut({ callbackUrl: '/' })}
-                  >
-                    <LogOut className="ml-2 h-4 w-4" />
-                    <span>تسجيل الخروج</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <div className="flex items-center gap-2">
+                <NotificationCenter />
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="flex items-center space-x-2 space-x-reverse">
+                      <User className="h-4 w-4" />
+                      <span className="hidden sm:inline">{session.user?.name || session.user?.email}</span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuItem asChild>
+                      <Link href="/profile" className="flex items-center">
+                        <User className="ml-2 h-4 w-4" />
+                        <span>الملف الشخصي</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/settings" className="flex items-center">
+                        <Settings className="ml-2 h-4 w-4" />
+                        <span>الإعدادات</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="flex items-center text-red-600 dark:text-red-400"
+                      onClick={() => signOut({ callbackUrl: '/' })}
+                    >
+                      <LogOut className="ml-2 h-4 w-4" />
+                      <span>تسجيل الخروج</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             ) : (
               <div className="flex items-center space-x-2 space-x-reverse">
                 <Button asChild variant="ghost">
@@ -135,6 +133,14 @@ export function Navbar() {
                   </Link>
                 ))}
                 <div className="border-t border-gray-200 dark:border-gray-700 pt-2">
+                  <Link
+                    href="/profile"
+                    className="flex items-center px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-300"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <User className="ml-2 h-4 w-4" />
+                    الملف الشخصي
+                  </Link>
                   <Link
                     href="/settings"
                     className="flex items-center px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-300"

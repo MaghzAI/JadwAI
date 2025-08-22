@@ -1,19 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { withAuth, withResourceAuth } from '@/lib/middleware/auth-middleware';
+import { Permission } from '@/lib/permissions';
 import { prisma } from '@/lib/prisma';
 import { StudyStatus, StudyType } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user) {
-      return NextResponse.json(
-        { error: 'غير مصرح بالوصول' },
-        { status: 401 }
-      );
+    const authResult = await withAuth(request, Permission.READ_STUDY);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    
+    const { session } = authResult;
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
@@ -92,14 +90,12 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session?.user) {
-      return NextResponse.json(
-        { error: 'غير مصرح بالوصول' },
-        { status: 401 }
-      );
+    const authResult = await withAuth(request, Permission.CREATE_STUDY);
+    if (authResult instanceof NextResponse) {
+      return authResult;
     }
+    
+    const { session } = authResult;
 
     const body = await request.json();
     

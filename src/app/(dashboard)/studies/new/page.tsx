@@ -120,11 +120,47 @@ export default function NewStudyPage() {
   const handleGenerate = async () => {
     setIsGenerating(true);
     
-    // Simulate AI generation process
-    setTimeout(() => {
+    try {
+      // Create the study using the API
+      const response = await fetch('/api/studies', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          projectId: parseInt(selectedProject),
+          title: studyTitle || `دراسة جدوى - ${new Date().toLocaleDateString('ar-SA')}`,
+          description: studyDescription || '',
+          type: selectedStudyType,
+          language: selectedLanguage,
+          aiModel: selectedAIModel,
+          currency: selectedCurrency,
+          includeFinancialAnalysis: selectedAnalyses.financial,
+          includeMarketAnalysis: selectedAnalyses.market,
+          includeTechnicalAnalysis: selectedAnalyses.technical,
+          includeRiskAnalysis: selectedAnalyses.risk,
+          includeLegalAnalysis: selectedAnalyses.legal,
+          includeEnvironmentalAnalysis: selectedAnalyses.environmental,
+          reportFormat: selectedReportFormat,
+          analysisDepth: selectedAnalysisDepth,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('فشل في إنشاء الدراسة');
+      }
+
+      const newStudy = await response.json();
       setIsGenerating(false);
-      router.push('/studies/generated/123'); // Mock study ID
-    }, 3000);
+      
+      // Redirect to the newly created study
+      router.push(`/studies/${newStudy.id}`);
+      
+    } catch (error) {
+      setIsGenerating(false);
+      console.error('Error generating study:', error);
+      alert('حدث خطأ أثناء إنشاء الدراسة. يرجى المحاولة مرة أخرى.');
+    }
   };
 
   const renderStep = () => {

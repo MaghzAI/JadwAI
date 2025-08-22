@@ -18,7 +18,7 @@ export function Navbar() {
   const { data: session, status } = useSession();
 
   const navItems = [
-    { href: '/', label: 'الرئيسية', icon: Home },
+    { href: '/dashboard', label: 'لوحة التحكم', icon: Home },
     { href: '/projects', label: 'المشاريع', icon: FolderOpen },
     { href: '/studies', label: 'الدراسات', icon: FileText },
   ];
@@ -71,9 +71,9 @@ export function Navbar() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuItem asChild>
-                    <Link href="/dashboard" className="flex items-center">
-                      <Home className="ml-2 h-4 w-4" />
-                      <span>لوحة التحكم</span>
+                    <Link href="/profile" className="flex items-center">
+                      <User className="ml-2 h-4 w-4" />
+                      <span>الملف الشخصي</span>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
@@ -134,21 +134,7 @@ export function Navbar() {
                     {item.label}
                   </Link>
                 ))}
-                <Link
-                  href="/studies"
-                  className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-                >
-                  الدراسات
-                </Link>
                 <div className="border-t border-gray-200 dark:border-gray-700 pt-2">
-                  <Link
-                    href="/dashboard"
-                    className="flex items-center px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-300"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    <Home className="ml-2 h-4 w-4" />
-                    لوحة التحكم
-                  </Link>
                   <Link
                     href="/settings"
                     className="flex items-center px-3 py-2 text-base font-medium text-gray-700 dark:text-gray-300"

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { FileUpload } from '@/components/ui/file-upload';
 import { 
   User,
   Settings,
@@ -67,15 +69,16 @@ interface UserSettings {
 }
 
 export default function SettingsPage() {
+  const { data: session } = useSession();
   const [settings, setSettings] = useState<UserSettings>({
-    firstName: 'أحمد',
-    lastName: 'المغازي',
-    email: 'ahmed.almaghazi@example.com',
-    phone: '+966501234567',
-    jobTitle: 'محلل الاستثمار',
-    company: 'شركة الاستثمار المتطور',
-    location: 'الرياض، المملكة العربية السعودية',
-    bio: 'محلل استثمار متخصص في دراسات الجدوى وتقييم المشاريع الاستثمارية',
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    jobTitle: '',
+    company: '',
+    location: '',
+    bio: '',
     avatar: '',
     
     language: 'ar',
@@ -97,19 +100,102 @@ export default function SettingsPage() {
   });
 
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+  // Load user settings on component mount
+  useEffect(() => {
+    const loadSettings = async () => {
+      if (!session?.user) return;
+      
+      try {
+        const response = await fetch('/api/settings');
+        if (response.ok) {
+          const data = await response.json();
+          setSettings(data);
+        }
+      } catch (error) {
+        console.error('Error loading settings:', error);
+      } finally {
+        setInitialLoading(false);
+      }
+    };
+
+    loadSettings();
+  }, [session]);
+
+  const handleAvatarUpload = async (file: File | null) => {
+    if (!file) {
+      // Handle avatar removal
+      setUploadingAvatar(true);
+      try {
+        const response = await fetch('/api/upload/avatar', {
+          method: 'DELETE',
+        });
+
+        if (response.ok) {
+          setSettings(prev => ({ ...prev, avatar: '' }));
+        } else {
+          alert('حدث خطأ أثناء حذف الصورة');
+        }
+      } catch (error) {
+        console.error('Error removing avatar:', error);
+        alert('حدث خطأ أثناء حذف الصورة');
+      } finally {
+        setUploadingAvatar(false);
+      }
+      return;
+    }
+
+    setUploadingAvatar(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/upload/avatar', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'فشل في رفع الصورة');
+      }
+
+      const data = await response.json();
+      setSettings(prev => ({ ...prev, avatar: data.avatarUrl }));
+      alert('تم رفع الصورة بنجاح');
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      alert(error instanceof Error ? error.message : 'حدث خطأ أثناء رفع الصورة');
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
 
   const handleSaveSettings = async () => {
     setLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      console.log('Settings saved:', settings);
+      const response = await fetch('/api/settings', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(settings),
+      });
+
+      if (!response.ok) {
+        throw new Error('فشل في حفظ الإعدادات');
+      }
+
+      alert('تم حفظ الإعدادات بنجاح');
     } catch (error) {
       console.error('Error saving settings:', error);
+      alert('حدث خطأ أثناء حفظ الإعدادات');
     } finally {
       setLoading(false);
     }
@@ -123,14 +209,29 @@ export default function SettingsPage() {
     
     setLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await fetch('/api/auth/change-password', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          currentPassword,
+          newPassword
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'فشل في تغيير كلمة المرور');
+      }
+
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
       alert('تم تغيير كلمة المرور بنجاح');
     } catch (error) {
       console.error('Error changing password:', error);
+      alert(error instanceof Error ? error.message : 'حدث خطأ أثناء تغيير كلمة المرور');
     } finally {
       setLoading(false);
     }
@@ -146,6 +247,17 @@ export default function SettingsPage() {
     a.download = 'user-settings.json';
     a.click();
   };
+
+  if (initialLoading) {
+    return (
+      <div className="container mx-auto p-6" dir="rtl">
+        <div className="flex items-center justify-center h-64">
+          <RefreshCcw className="h-8 w-8 animate-spin" />
+          <span className="ml-2">جاري تحميل الإعدادات...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-6 space-y-6" dir="rtl">
@@ -204,22 +316,27 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               {/* Avatar Section */}
-              <div className="flex items-center gap-4">
-                <Avatar className="h-20 w-20">
-                  <AvatarImage src={settings.avatar} alt="Profile" />
-                  <AvatarFallback className="text-lg">
-                    {settings.firstName.charAt(0)}{settings.lastName.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="space-y-2">
-                  <Button variant="outline" size="sm">
-                    <Camera className="ml-2 h-4 w-4" />
-                    تغيير الصورة
-                  </Button>
-                  <p className="text-sm text-gray-500">
-                    يُفضل استخدام صورة مربعة بحجم 400x400 بكسل
-                  </p>
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <Avatar className="h-20 w-20">
+                    <AvatarImage src={settings.avatar} alt="Profile" />
+                    <AvatarFallback className="text-lg">
+                      {settings.firstName.charAt(0)}{settings.lastName.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="space-y-1">
+                    <h4 className="font-medium">الصورة الشخصية</h4>
+                    <p className="text-sm text-gray-500">
+                      يُفضل استخدام صورة مربعة بحجم 400x400 بكسل
+                    </p>
+                  </div>
                 </div>
+                
+                <FileUpload
+                  onFileSelect={handleAvatarUpload}
+                  currentImage={settings.avatar}
+                  disabled={uploadingAvatar}
+                />
               </div>
 
               {/* Basic Info */}

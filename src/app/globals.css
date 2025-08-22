@@ -28,6 +28,30 @@ body{
     padding-left: 1rem;
     padding-right: 1rem;
   }
+  
+  /* Mobile-first chart sizing */
+  .chart-container {
+    height: 250px !important;
+  }
+  
+  /* Mobile table responsive */
+  .table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Mobile card stacking */
+  .mobile-stack {
+    flex-direction: column !important;
+    gap: 1rem !important;
+  }
+  
+  /* Touch-friendly dropdowns */
+  .dropdown-content {
+    min-width: 200px;
+    max-height: 70vh;
+    overflow-y: auto;
+  }
 }
 
 /* Tablet optimizations */
@@ -35,6 +59,38 @@ body{
   .container {
     padding-left: 1.5rem;
     padding-right: 1.5rem;
+  }
+  
+  /* Tablet-specific chart sizing */
+  .chart-container {
+    height: 350px;
+  }
+  
+  /* Tablet grid layouts */
+  .tablet-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* Large screen optimizations */
+@media (min-width: 1025px) {
+  /* Better chart sizing for desktop */
+  .chart-container {
+    height: 400px;
+  }
+  
+  /* Desktop grid layouts */
+  .desktop-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  /* Optimize for retina displays */
+  .icon, .logo {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
   }
 }
 

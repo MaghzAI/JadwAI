@@ -76,9 +76,15 @@ jest.mock('recharts', () => ({
   LineChart: ({ children }) => <div data-testid="line-chart">{children}</div>,
   BarChart: ({ children }) => <div data-testid="bar-chart">{children}</div>,
   ScatterChart: ({ children }) => <div data-testid="scatter-chart">{children}</div>,
+  PieChart: ({ children }) => <div data-testid="pie-chart">{children}</div>,
   Line: () => <div data-testid="line" />,
   Bar: () => <div data-testid="bar" />,
   Scatter: () => <div data-testid="scatter" />,
+  Pie: ({ data }) => (
+    <div data-testid="pie">
+      {data && data.map((_, index) => <div key={index} data-testid="cell" />)}
+    </div>
+  ),
   XAxis: () => <div data-testid="x-axis" />,
   YAxis: () => <div data-testid="y-axis" />,
   CartesianGrid: () => <div data-testid="cartesian-grid" />,

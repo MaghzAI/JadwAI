@@ -50,6 +50,11 @@ model User {
   role          UserRole  @default(USER)
   language      String    @default("ar")
   theme         String    @default("system")
+  phone         String?
+  company       String?
+  location      String?
+  bio           String?   @db.Text
+  avatar        String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
@@ -123,7 +128,8 @@ model FeasibilityStudy {
 enum UserRole {
   USER
   ADMIN
-  PREMIUM
+  MANAGER
+  VIEWER
 }
 
 enum ProjectStatus {

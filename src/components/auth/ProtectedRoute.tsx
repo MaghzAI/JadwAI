@@ -3,7 +3,8 @@
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { Permission, hasPermission, hasAnyPermission, ROLE_PERMISSIONS } from '@/lib/auth/permissions';
+import { Permission, hasPermission, hasAnyPermission, rolePermissions } from '@/lib/permissions';
+import { UserRole } from '@prisma/client';
 import { AlertTriangle, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -69,18 +70,11 @@ export default function ProtectedRoute({
 
   // Check permissions if required
   if (requiredPermissions.length > 0) {
-    const userRole = (session.user as any)?.role || 'VIEWER';
-    const user = {
-      id: session.user?.id || '',
-      email: session.user?.email || '',
-      name: session.user?.name || '',
-      role: userRole,
-      permissions: ROLE_PERMISSIONS[userRole as keyof typeof ROLE_PERMISSIONS]
-    };
+    const userRole = (session.user as any)?.role as UserRole || UserRole.VIEWER;
 
     const hasAccess = requireAny 
-      ? hasAnyPermission(user, requiredPermissions)
-      : requiredPermissions.every(permission => hasPermission(user, permission));
+      ? hasAnyPermission(userRole, requiredPermissions)
+      : requiredPermissions.every(permission => hasPermission(userRole, permission));
 
     if (!hasAccess) {
       if (fallback) {

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { User, Menu, X, Home, FolderOpen, FileText, Settings, LogOut } from "lucide-react";
+import { User, Menu, X, Home, FolderOpen, FileText, Settings, LogOut, BarChart3, Users, Download, Share2, Bot } from "lucide-react";
 import { NotificationCenter } from "@/components/notifications/NotificationCenter";
 
 export function Navbar() {
@@ -16,6 +16,10 @@ export function Navbar() {
     { href: '/dashboard', label: 'لوحة التحكم', icon: Home },
     { href: '/projects', label: 'المشاريع', icon: FolderOpen },
     { href: '/studies', label: 'الدراسات', icon: FileText },
+    { href: '/analytics', label: 'التحليلات', icon: BarChart3 },
+    { href: '/ai-tools', label: 'أدوات الذكاء الاصطناعي', icon: Bot },
+    { href: '/team', label: 'إدارة الفريق', icon: Users },
+    { href: '/exports', label: 'التصدير والمشاركة', icon: Download },
   ];
 
   return (

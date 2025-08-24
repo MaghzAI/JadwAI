@@ -10,7 +10,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Slider } from '@/components/ui/slider';
-import { TrendingUp, Users, Target, Building, BarChart3, Plus, Trash2 } from 'lucide-react';
+import { TrendingUp, Users, Target, Building, BarChart3, Plus, Trash2, Sparkles } from 'lucide-react';
+import { ContentGenerator } from '@/components/ai/ContentGenerator';
 
 const MARKET_SIZES = [
   { value: 'niche', label: 'سوق متخصص (<1 مليون)' },
@@ -172,6 +173,21 @@ export default function MarketAnalysisStep() {
       ...prev,
       targetSegments: prev.targetSegments.filter((_, i) => i !== index),
     }));
+  };
+
+  const handleAIContentGenerated = (aiContent: any) => {
+    if (typeof aiContent === 'object' && aiContent !== null) {
+      setFormData(prev => ({
+        ...prev,
+        marketSize: aiContent.marketSize || prev.marketSize,
+        growthRate: aiContent.growthRate || prev.growthRate,
+        keyTrends: Array.isArray(aiContent.keyTrends) ? aiContent.keyTrends : prev.keyTrends,
+        marketOpportunities: Array.isArray(aiContent.opportunities) ? 
+          aiContent.opportunities.join('\n• ') : prev.marketOpportunities,
+        marketThreats: Array.isArray(aiContent.challenges) ? 
+          aiContent.challenges.join('\n• ') : prev.marketThreats
+      }));
+    }
   };
 
   // إدارة المنافسين
@@ -692,6 +708,19 @@ export default function MarketAnalysisStep() {
           </CardContent>
         </Card>
       </div>
+
+      {/* AI Content Generator */}
+      <ContentGenerator 
+        type="market_analysis"
+        projectData={{
+          marketSize: formData.marketSize,
+          growthRate: formData.growthRate,
+          keyTrends: formData.keyTrends,
+          targetMarket: state.data.executiveSummary?.targetMarket || ''
+        }}
+        onContentGenerated={handleAIContentGenerated}
+        className="border-2 border-dashed border-green-200 dark:border-green-800"
+      />
     </div>
   );
 }

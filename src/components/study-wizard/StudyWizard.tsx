@@ -9,13 +9,67 @@ import FinancialAnalysisStep from './steps/FinancialAnalysisStep';
 import TechnicalAnalysisStep from './steps/TechnicalAnalysisStep';
 import RiskAssessmentStep from './steps/RiskAssessmentStep';
 import ReviewStep from './steps/ReviewStep';
+import { AIAssistant } from '@/components/ai/AIAssistant';
 import { Card, CardContent } from '@/components/ui/card';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function StudyWizard() {
-  const { state } = useStudyWizard();
-  const { currentStep, steps, isLoading, errors } = state;
+  const { state, dispatch } = useStudyWizard();
+  const { currentStep, steps, isLoading, errors, executiveSummary, marketAnalysis, financialAnalysis, technicalAnalysis, riskAssessment } = state;
+
+  const handleAISuggestionApply = (type: string, data: any) => {
+    switch (type) {
+      case 'executive_summary':
+        if (typeof data === 'string') {
+          dispatch({
+            type: 'UPDATE_EXECUTIVE_SUMMARY',
+            payload: {
+              projectIdea: data.split('\n')[0] || '',
+              objectives: data
+            }
+          });
+        }
+        break;
+      case 'market_analysis':
+        if (data && typeof data === 'object') {
+          dispatch({
+            type: 'UPDATE_MARKET_ANALYSIS',
+            payload: {
+              marketSize: data.marketSize || '',
+              growthRate: data.growthRate || '',
+              keyTrends: data.keyTrends || [],
+              opportunities: data.opportunities || [],
+              challenges: data.challenges || []
+            }
+          });
+        }
+        break;
+      case 'risk_assessment':
+        if (Array.isArray(data)) {
+          dispatch({
+            type: 'UPDATE_RISK_ASSESSMENT',
+            payload: {
+              risks: data,
+              overallRiskLevel: 'medium',
+              riskManagementStrategy: 'استراتيجية شاملة لإدارة المخاطر'
+            }
+          });
+        }
+        break;
+    }
+  };
+
+  const getCurrentStepData = () => {
+    return {
+      currentStep: steps[currentStep]?.id,
+      executiveSummary,
+      marketAnalysis,
+      financialAnalysis,
+      technicalAnalysis,
+      riskAssessment
+    };
+  };
 
   if (isLoading) {
     return (
@@ -101,6 +155,13 @@ export default function StudyWizard() {
           {/* Navigation */}
           <WizardNavigation />
         </div>
+
+        {/* AI Assistant */}
+        <AIAssistant 
+          currentStep={steps[currentStep]?.id}
+          studyData={getCurrentStepData()}
+          onSuggestionApply={handleAISuggestionApply}
+        />
       </div>
     </div>
   );

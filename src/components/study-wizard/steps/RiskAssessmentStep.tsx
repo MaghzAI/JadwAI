@@ -9,7 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { AlertTriangle, Plus, Trash2, Shield, TrendingDown } from 'lucide-react';
+import { AlertTriangle, Plus, Trash2, Shield, TrendingDown, Sparkles } from 'lucide-react';
+import { ContentGenerator } from '@/components/ai/ContentGenerator';
 
 interface Risk {
   category: string;
@@ -109,6 +110,26 @@ export default function RiskAssessmentStep() {
       ...prev,
       risks: prev.risks.filter((_, i) => i !== index),
     }));
+  };
+
+  const handleAIContentGenerated = (aiContent: any) => {
+    if (Array.isArray(aiContent)) {
+      const aiRisks: Risk[] = aiContent.map(risk => ({
+        category: risk.category || 'عامة',
+        description: risk.description || 'مخاطر غير محددة',
+        probability: risk.probability || 'medium',
+        impact: risk.impact || 'medium',
+        mitigation: risk.mitigation || 'استراتيجية التخفيف',
+        contingency: risk.contingency || 'خطة الطوارئ'
+      }));
+      
+      setFormData(prev => ({
+        ...prev,
+        risks: [...prev.risks, ...aiRisks],
+        overallRiskLevel: 'medium',
+        riskManagementStrategy: 'استراتيجية شاملة لإدارة المخاطر المولدة بالذكاء الاصطناعي'
+      }));
+    }
   };
 
   const getRiskScore = (probability: string, impact: string): number => {
@@ -396,6 +417,19 @@ export default function RiskAssessmentStep() {
           </Select>
         </CardContent>
       </Card>
+
+      {/* AI Content Generator */}
+      <ContentGenerator 
+        type="risk_assessment"
+        projectData={{
+          projectType: state.data.executiveSummary?.projectType || '',
+          targetMarket: state.data.executiveSummary?.targetMarket || '',
+          marketSize: state.data.marketAnalysis?.marketSize || '',
+          investmentRange: state.data.executiveSummary?.investmentRange || ''
+        }}
+        onContentGenerated={handleAIContentGenerated}
+        className="border-2 border-dashed border-orange-200 dark:border-orange-800"
+      />
     </div>
   );
 }

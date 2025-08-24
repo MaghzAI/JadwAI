@@ -9,8 +9,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { Lightbulb, Target, DollarSign, Calendar, MapPin } from 'lucide-react';
+import { Lightbulb, Target, DollarSign, Calendar, MapPin, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ContentGenerator } from '@/components/ai/ContentGenerator';
 
 const PROJECT_TYPES = [
   { value: 'technology', label: 'تقنية معلومات' },
@@ -135,6 +136,29 @@ export default function ExecutiveSummaryStep() {
       ...prev,
       keySuccessFactors: prev.keySuccessFactors.filter(f => f !== factor),
     }));
+  };
+
+  const handleAIContentGenerated = (aiContent: any) => {
+    if (typeof aiContent === 'string') {
+      // تحليل المحتوى المولد من AI وتطبيقه على النموذج
+      const lines = aiContent.split('\n').filter(line => line.trim());
+      let overview = '';
+      let objectives = '';
+      
+      lines.forEach(line => {
+        if (line.includes('نظرة عامة') || line.includes('المشروع')) {
+          overview += line.replace(/#+\s*/, '') + '\n';
+        } else if (line.includes('أهداف') || line.includes('الهدف')) {
+          objectives += line.replace(/#+\s*/, '') + '\n';
+        }
+      });
+
+      setFormData(prev => ({
+        ...prev,
+        overview: overview.trim() || aiContent.substring(0, 500),
+        objectives: objectives.trim() || 'أهداف المشروع المولدة بالذكاء الاصطناعي'
+      }));
+    }
   };
 
   return (
@@ -382,6 +406,19 @@ export default function ExecutiveSummaryStep() {
           />
         </CardContent>
       </Card>
+
+      {/* AI Content Generator */}
+      <ContentGenerator 
+        type="executive_summary"
+        projectData={{
+          projectName: formData.projectName,
+          projectType: formData.projectType,
+          targetMarket: formData.targetMarket,
+          investmentRange: formData.investmentRange
+        }}
+        onContentGenerated={handleAIContentGenerated}
+        className="border-2 border-dashed border-purple-200 dark:border-purple-800"
+      />
     </div>
   );
 }

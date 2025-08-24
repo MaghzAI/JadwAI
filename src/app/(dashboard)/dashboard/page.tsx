@@ -17,7 +17,11 @@ import {
   BarChart3,
   Clock,
   CheckCircle2,
-  LayoutGrid
+  LayoutGrid,
+  Bot,
+  Download,
+  Share2,
+  Settings
 } from 'lucide-react';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
@@ -171,6 +175,49 @@ export default function DashboardPage() {
             </Link>
           </Button>
         </div>
+      </div>
+
+      {/* Quick Access Cards for New Features */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <Card className="hover:shadow-md transition-shadow cursor-pointer">
+          <Link href="/analytics">
+            <CardContent className="p-6 text-center">
+              <BarChart3 className="h-8 w-8 text-blue-600 mx-auto mb-4" />
+              <h3 className="font-semibold mb-2">التحليلات</h3>
+              <p className="text-sm text-gray-600">لوحة تحليلات شاملة</p>
+            </CardContent>
+          </Link>
+        </Card>
+        
+        <Card className="hover:shadow-md transition-shadow cursor-pointer">
+          <Link href="/ai-tools">
+            <CardContent className="p-6 text-center">
+              <Bot className="h-8 w-8 text-purple-600 mx-auto mb-4" />
+              <h3 className="font-semibold mb-2">أدوات AI</h3>
+              <p className="text-sm text-gray-600">إدارة الذكاء الاصطناعي</p>
+            </CardContent>
+          </Link>
+        </Card>
+        
+        <Card className="hover:shadow-md transition-shadow cursor-pointer">
+          <Link href="/team">
+            <CardContent className="p-6 text-center">
+              <Users className="h-8 w-8 text-green-600 mx-auto mb-4" />
+              <h3 className="font-semibold mb-2">إدارة الفريق</h3>
+              <p className="text-sm text-gray-600">الأعضاء والصلاحيات</p>
+            </CardContent>
+          </Link>
+        </Card>
+        
+        <Card className="hover:shadow-md transition-shadow cursor-pointer">
+          <Link href="/exports">
+            <CardContent className="p-6 text-center">
+              <Download className="h-8 w-8 text-orange-600 mx-auto mb-4" />
+              <h3 className="font-semibold mb-2">التصدير والمشاركة</h3>
+              <p className="text-sm text-gray-600">تقارير ومشاركة</p>
+            </CardContent>
+          </Link>
+        </Card>
       </div>
 
       {/* New Advanced Dashboard Layout */}

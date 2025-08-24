@@ -6,35 +6,15 @@ import { z } from 'zod';
 
 // Schema for settings validation
 const settingsSchema = z.object({
-  firstName: z.string().min(1, 'الاسم الأول مطلوب'),
-  lastName: z.string().min(1, 'الاسم الأخير مطلوب'),
+  name: z.string().min(1, 'الاسم مطلوب'),
   email: z.string().email('بريد إلكتروني غير صحيح'),
   phone: z.string().optional(),
-  jobTitle: z.string().optional(),
   company: z.string().optional(),
   location: z.string().optional(),
   bio: z.string().optional(),
-  avatar: z.string().optional(),
-  
-  // Preferences
+  image: z.string().optional(),
   language: z.enum(['ar', 'en']).default('ar'),
   theme: z.enum(['light', 'dark', 'system']).default('system'),
-  currency: z.string().default('SAR'),
-  dateFormat: z.string().default('dd/MM/yyyy'),
-  timezone: z.string().default('Asia/Riyadh'),
-  
-  // Notifications
-  emailNotifications: z.boolean().default(true),
-  pushNotifications: z.boolean().default(true),
-  projectUpdates: z.boolean().default(true),
-  studyAlerts: z.boolean().default(true),
-  weeklyReports: z.boolean().default(false),
-  
-  // Privacy & Security
-  profileVisibility: z.enum(['public', 'team', 'private']).default('team'),
-  dataSharing: z.boolean().default(false),
-  twoFactorAuth: z.boolean().default(false),
-  sessionTimeout: z.number().min(0).default(60),
 });
 
 export async function GET() {
@@ -48,16 +28,15 @@ export async function GET() {
       where: { id: session.user.id },
       select: {
         id: true,
-        firstName: true,
-        lastName: true,
+        name: true,
         email: true,
         phone: true,
-        jobTitle: true,
         company: true,
         location: true,
         bio: true,
-        avatar: true,
-        preferences: true,
+        image: true,
+        language: true,
+        theme: true,
       }
     });
 
@@ -65,36 +44,16 @@ export async function GET() {
       return NextResponse.json({ error: 'المستخدم غير موجود' }, { status: 404 });
     }
 
-    // Parse preferences or use defaults
-    const preferences = user.preferences as any || {};
-    
     const settings = {
-      firstName: user.firstName || '',
-      lastName: user.lastName || '',
+      name: user.name || '',
       email: user.email,
       phone: user.phone || '',
-      jobTitle: user.jobTitle || '',
       company: user.company || '',
       location: user.location || '',
       bio: user.bio || '',
-      avatar: user.avatar || '',
-      
-      language: preferences.language || 'ar',
-      theme: preferences.theme || 'system',
-      currency: preferences.currency || 'SAR',
-      dateFormat: preferences.dateFormat || 'dd/MM/yyyy',
-      timezone: preferences.timezone || 'Asia/Riyadh',
-      
-      emailNotifications: preferences.emailNotifications ?? true,
-      pushNotifications: preferences.pushNotifications ?? true,
-      projectUpdates: preferences.projectUpdates ?? true,
-      studyAlerts: preferences.studyAlerts ?? true,
-      weeklyReports: preferences.weeklyReports ?? false,
-      
-      profileVisibility: preferences.profileVisibility || 'team',
-      dataSharing: preferences.dataSharing ?? false,
-      twoFactorAuth: preferences.twoFactorAuth ?? false,
-      sessionTimeout: preferences.sessionTimeout || 60,
+      image: user.image || '',
+      language: user.language || 'ar',
+      theme: user.theme || 'system',
     };
 
     return NextResponse.json(settings);
@@ -117,47 +76,21 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const validatedData = settingsSchema.parse(body);
 
-    // Separate user data from preferences
-    const {
-      firstName,
-      lastName,
-      email,
-      phone,
-      jobTitle,
-      company,
-      location,
-      bio,
-      avatar,
-      ...preferences
-    } = validatedData;
-
-    // Update user and preferences
+    // Update user data
     const updatedUser = await prisma.user.update({
       where: { id: session.user.id },
-      data: {
-        firstName,
-        lastName,
-        email,
-        phone,
-        jobTitle,
-        company,
-        location,
-        bio,
-        avatar,
-        preferences: preferences as any,
-      },
+      data: validatedData,
       select: {
         id: true,
-        firstName: true,
-        lastName: true,
+        name: true,
         email: true,
         phone: true,
-        jobTitle: true,
         company: true,
         location: true,
         bio: true,
-        avatar: true,
-        preferences: true,
+        image: true,
+        language: true,
+        theme: true,
       }
     });
 

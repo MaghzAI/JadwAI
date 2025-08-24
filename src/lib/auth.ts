@@ -1,4 +1,5 @@
 import type { NextAuthOptions } from 'next-auth';
+import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import GoogleProvider from 'next-auth/providers/google';
 import GitHubProvider from 'next-auth/providers/github';
 import CredentialsProvider from 'next-auth/providers/credentials';
@@ -7,6 +8,7 @@ import bcrypt from 'bcryptjs';
 import type { UserRole } from '@prisma/client';
 
 export const authOptions: NextAuthOptions = {
+  adapter: PrismaAdapter(prisma),
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
@@ -33,9 +35,13 @@ export const authOptions: NextAuthOptions = {
           },
         });
 
-        // For now, we'll skip password validation since we're using OAuth primarily
-        // This will be implemented when we add email/password authentication
-        if (!user) {
+        // Validate password using bcrypt when using credentials login
+        if (!user || !user.password) {
+          return null;
+        }
+
+        const isValid = await bcrypt.compare(credentials.password, user.password);
+        if (!isValid) {
           return null;
         }
 

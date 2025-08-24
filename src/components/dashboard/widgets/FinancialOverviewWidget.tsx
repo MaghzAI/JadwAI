@@ -11,8 +11,10 @@ import {
   PieChart,
   BarChart3
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useProjects } from '@/hooks/useProjects';
+import { ProjectStatus } from '@prisma/client';
 
 interface FinancialData {
   totalInvestment: number;
@@ -35,6 +37,7 @@ interface FinancialOverviewWidgetProps {
 }
 
 export function FinancialOverviewWidget({ className = '' }: FinancialOverviewWidgetProps) {
+  const { projects, loading, error } = useProjects();
   const [data, setData] = useState<FinancialData>({
     totalInvestment: 0,
     expectedRevenue: 0,
@@ -45,40 +48,62 @@ export function FinancialOverviewWidget({ className = '' }: FinancialOverviewWid
     cashFlow: [],
     currency: 'SAR'
   });
-  const [loading, setLoading] = useState(true);
+
+  const calculateFinancialData = useCallback(() => {
+    if (projects.length === 0) return;
+
+    // Calculate basic metrics from project count (mock data until we have real financial data)
+    const totalInvestment = projects.length * 100000; // Mock: SAR 100K per project
+    
+    // For completed projects, calculate mock revenue
+    const completedProjects = projects.filter(p => p.status === ProjectStatus.COMPLETED);
+    const totalRevenue = completedProjects.length * 150000; // Mock: SAR 150K per completed project
+
+    // Expected revenue from all active projects
+    const activeProjects = projects.filter(p => p.status === ProjectStatus.ACTIVE);
+    const expectedRevenue = (completedProjects.length * 150000) + (activeProjects.length * 120000);
+
+    // Calculate ROI (simplified)
+    const roi = totalInvestment > 0 ? ((totalRevenue - totalInvestment) / totalInvestment) * 100 : 0;
+
+    // Mock profit margin (would come from real financial data)
+    const profitMargin = totalRevenue > 0 ? 25 : 0;
+
+    // Mock monthly growth
+    const monthlyGrowth = Math.random() * 10;
+
+    // Generate mock cash flow based on project data
+    const months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو'];
+    const cashFlow = months.map((month, index) => {
+      const baseIncome = totalInvestment / 12;
+      const variance = (Math.random() - 0.5) * 0.3;
+      const income = Math.round(baseIncome * (1 + variance));
+      const expenses = Math.round(income * 0.7);
+      return {
+        month,
+        income,
+        expenses,
+        profit: income - expenses
+      };
+    });
+
+    setData({
+      totalInvestment,
+      expectedRevenue,
+      actualRevenue: totalRevenue,
+      roi: Math.round(roi * 10) / 10,
+      profitMargin,
+      monthlyGrowth: Math.round(monthlyGrowth * 10) / 10,
+      cashFlow,
+      currency: 'SAR'
+    });
+  }, [projects]);
 
   useEffect(() => {
-    fetchFinancialData();
-  }, []);
-
-  const fetchFinancialData = async () => {
-    try {
-      // Mock data - سيتم استبداله بـ API call حقيقي
-      await new Promise(resolve => setTimeout(resolve, 1200));
-      
-      setData({
-        totalInvestment: 2500000,
-        expectedRevenue: 4200000,
-        actualRevenue: 3800000,
-        roi: 24.5,
-        profitMargin: 31.2,
-        monthlyGrowth: 8.7,
-        cashFlow: [
-          { month: 'يناير', income: 350000, expenses: 240000, profit: 110000 },
-          { month: 'فبراير', income: 420000, expenses: 280000, profit: 140000 },
-          { month: 'مارس', income: 380000, expenses: 260000, profit: 120000 },
-          { month: 'أبريل', income: 510000, expenses: 320000, profit: 190000 },
-          { month: 'مايو', income: 480000, expenses: 310000, profit: 170000 },
-          { month: 'يونيو', income: 550000, expenses: 340000, profit: 210000 },
-        ],
-        currency: 'SAR'
-      });
-    } catch (error) {
-      console.error('Error fetching financial data:', error);
-    } finally {
-      setLoading(false);
+    if (projects.length > 0) {
+      calculateFinancialData();
     }
-  };
+  }, [projects, calculateFinancialData]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('ar-SA', {
@@ -110,6 +135,45 @@ export function FinancialOverviewWidget({ className = '' }: FinancialOverviewWid
                 <div className="h-8 bg-gray-200 rounded w-full"></div>
               </div>
             ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className={`${className}`}>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <DollarSign className="h-5 w-5" />
+            نظرة عامة مالية
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 text-red-500 dark:text-red-400">
+            <TrendingDown className="h-12 w-12 mx-auto mb-3" />
+            <p>خطأ في تحميل البيانات المالية</p>
+            <p className="text-sm text-gray-500 mt-1">يرجى المحاولة مرة أخرى</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (projects.length === 0) {
+    return (
+      <Card className={`${className}`}>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <DollarSign className="h-5 w-5" />
+            نظرة عامة مالية
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+            <DollarSign className="h-12 w-12 mx-auto mb-3 opacity-50" />
+            <p>لا توجد بيانات مالية متاحة</p>
           </div>
         </CardContent>
       </Card>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import Image from 'next/image';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -55,12 +56,13 @@ export interface ProjectStage {
 }
 
 interface ProjectTimelineProps {
+  projectId?: string;
   stages: ProjectStage[];
-  projectStartDate: Date;
-  projectEndDate: Date;
-  onStageUpdate: (stageId: string, updates: Partial<ProjectStage>) => void;
-  onTaskToggle: (stageId: string, taskId: string) => void;
-  onMilestoneToggle: (stageId: string, milestoneId: string) => void;
+  projectStartDate?: Date;
+  projectEndDate?: Date;
+  onStageUpdate?: (stageId: string, updates: Partial<ProjectStage>) => void;
+  onTaskToggle?: (stageId: string, taskId: string) => void;
+  onMilestoneToggle?: (stageId: string, milestoneId: string) => void;
 }
 
 export function ProjectTimeline({ 
@@ -71,10 +73,10 @@ export function ProjectTimeline({
   onTaskToggle,
   onMilestoneToggle
 }: ProjectTimelineProps) {
-  const [viewMode, setViewMode] = useState<'timeline' | 'list' | 'gantt'>('timeline');
+  const [viewMode, setViewMode] = useState<'timeline' | 'list' | 'gantt'>('timeline' as const);
   const [selectedStage, setSelectedStage] = useState<string | null>(null);
 
-  const totalDays = differenceInDays(projectEndDate, projectStartDate);
+  const totalDays = projectStartDate && projectEndDate ? differenceInDays(projectEndDate, projectStartDate) : 100;
   
   const getStatusColor = (status: ProjectStage['status']) => {
     switch (status) {
@@ -107,6 +109,10 @@ export function ProjectTimeline({
   };
 
   const getStagePosition = (stage: ProjectStage) => {
+    if (!projectStartDate || !stage.startDate || !stage.endDate) {
+      return { left: '0%', width: '100%' };
+    }
+    
     const stageStart = differenceInDays(stage.startDate, projectStartDate);
     const stageDuration = differenceInDays(stage.endDate, stage.startDate);
     
@@ -146,21 +152,21 @@ export function ProjectTimeline({
           
           <div className="flex gap-2 mt-4 md:mt-0">
             <Button
-              variant={viewMode === 'timeline' ? 'default' : 'outline'}
+              variant={(viewMode as string) === 'timeline' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setViewMode('timeline')}
             >
               الجدول الزمني
             </Button>
             <Button
-              variant={viewMode === 'list' ? 'default' : 'outline'}
+              variant={(viewMode as string) === 'list' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setViewMode('list')}
             >
               القائمة
             </Button>
             <Button
-              variant={viewMode === 'gantt' ? 'default' : 'outline'}
+              variant={(viewMode as string) === 'gantt' ? 'default' : 'outline'}
               size="sm"
               onClick={() => setViewMode('gantt')}
             >
@@ -232,8 +238,8 @@ export function ProjectTimeline({
             <div className="space-y-6">
               {/* Timeline Header */}
               <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
-                <span>{format(projectStartDate, 'dd MMM yyyy', { locale: ar })}</span>
-                <span>{format(projectEndDate, 'dd MMM yyyy', { locale: ar })}</span>
+                <span>{projectStartDate ? format(projectStartDate, 'dd MMM yyyy', { locale: ar }) : 'غير محدد'}</span>
+                <span>{projectEndDate ? format(projectEndDate, 'dd MMM yyyy', { locale: ar }) : 'غير محدد'}</span>
               </div>
               
               {/* Timeline Bar */}
@@ -307,6 +313,7 @@ export function ProjectTimeline({
                       
                       {/* Milestones */}
                       {stage.milestones.map((milestone) => {
+                        if (!projectStartDate) return null;
                         const milestonePos = differenceInDays(milestone.date, projectStartDate);
                         const milestoneLeft = `${(milestonePos / totalDays) * 100}%`;
                         
@@ -339,9 +346,9 @@ export function ProjectTimeline({
           <StageDetails 
             stage={stages.find(s => s.id === selectedStage)!}
             onClose={() => setSelectedStage(null)}
-            onUpdate={(updates) => onStageUpdate(selectedStage, updates)}
-            onTaskToggle={(taskId) => onTaskToggle(selectedStage, taskId)}
-            onMilestoneToggle={(milestoneId) => onMilestoneToggle(selectedStage, milestoneId)}
+            onUpdate={(updates) => selectedStage && onStageUpdate?.(selectedStage, updates)}
+            onTaskToggle={(taskId) => selectedStage && onTaskToggle?.(selectedStage, taskId)}
+            onMilestoneToggle={(milestoneId) => selectedStage && onMilestoneToggle?.(selectedStage, milestoneId)}
           />
         )}
       </div>
@@ -355,14 +362,14 @@ export function ProjectTimeline({
         <h2 className="text-2xl font-bold">مراحل المشروع</h2>
         <div className="flex gap-2">
           <Button
-            variant={viewMode === 'timeline' ? 'default' : 'outline'}
+            variant={(viewMode as string) === 'timeline' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setViewMode('timeline')}
           >
             الجدول الزمني
           </Button>
           <Button
-            variant={viewMode === 'list' ? 'default' : 'outline'}
+            variant={(viewMode as string) === 'list' ? 'default' : 'outline'}
             size="sm"
             onClick={() => setViewMode('list')}
           >
@@ -542,7 +549,7 @@ function StageDetails({
             {stage.assignees.map((assignee) => (
               <div key={assignee.id} className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-full px-3 py-1">
                 {assignee.avatar ? (
-                  <img src={assignee.avatar} alt={assignee.name} className="w-6 h-6 rounded-full" />
+                  <Image src={assignee.avatar} alt={assignee.name} width={24} height={24} className="rounded-full" />
                 ) : (
                   <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs">
                     {assignee.name.charAt(0)}

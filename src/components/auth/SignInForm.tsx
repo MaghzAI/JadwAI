@@ -227,6 +227,12 @@ export default function SignInForm() {
             </div>
           </div>
 
+          <div className="text-right">
+            <Link href="/auth/forgot-password" className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
+              نسيت كلمة المرور؟
+            </Link>
+          </div>
+
           <div className="flex flex-col gap-2">
             <Button 
               type="submit" 

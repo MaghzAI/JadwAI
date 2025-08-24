@@ -263,7 +263,8 @@ export function ReportExporter({ projectId, reportType = 'project', data }: Repo
                           <Checkbox
                             id={section.id}
                             checked={config.sections.includes(section.id)}
-                            onCheckedChange={(checked) => {
+                            onChange={(e) => {
+                              const checked = e.target.checked;
                               setConfig(prev => ({
                                 ...prev,
                                 sections: checked
@@ -293,8 +294,8 @@ export function ReportExporter({ projectId, reportType = 'project', data }: Repo
                         <Checkbox
                           id="includeSummary"
                           checked={config.includeSummary}
-                          onCheckedChange={(checked) => 
-                            setConfig(prev => ({ ...prev, includeSummary: !!checked }))
+                          onChange={(e) => 
+                            setConfig(prev => ({ ...prev, includeSummary: e.target.checked }))
                           }
                         />
                         <Label htmlFor="includeSummary" className="cursor-pointer">
@@ -305,8 +306,8 @@ export function ReportExporter({ projectId, reportType = 'project', data }: Repo
                         <Checkbox
                           id="includeCharts"
                           checked={config.includeCharts}
-                          onCheckedChange={(checked) => 
-                            setConfig(prev => ({ ...prev, includeCharts: !!checked }))
+                          onChange={(e) => 
+                            setConfig(prev => ({ ...prev, includeCharts: e.target.checked }))
                           }
                         />
                         <Label htmlFor="includeCharts" className="cursor-pointer">
@@ -317,8 +318,8 @@ export function ReportExporter({ projectId, reportType = 'project', data }: Repo
                         <Checkbox
                           id="includeDetails"
                           checked={config.includeDetails}
-                          onCheckedChange={(checked) => 
-                            setConfig(prev => ({ ...prev, includeDetails: !!checked }))
+                          onChange={(e) => 
+                            setConfig(prev => ({ ...prev, includeDetails: e.target.checked }))
                           }
                         />
                         <Label htmlFor="includeDetails" className="cursor-pointer">

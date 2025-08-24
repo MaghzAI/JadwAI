@@ -28,6 +28,29 @@ import {
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 
+// Helper functions
+const getNotificationIcon = (type: Notification['type']) => {
+  switch (type) {
+    case 'task': return User;
+    case 'deadline': return Clock;
+    case 'milestone': return CheckCircle2;
+    case 'budget': return DollarSign;
+    case 'team': return Users;
+    case 'system': return Settings;
+    case 'approval': return FileText;
+    default: return Bell;
+  }
+};
+
+const getPriorityColor = (priority: Notification['priority']) => {
+  switch (priority) {
+    case 'urgent': return 'text-red-600 bg-red-50';
+    case 'high': return 'text-orange-600 bg-orange-50';
+    case 'medium': return 'text-blue-600 bg-blue-50';
+    case 'low': return 'text-gray-600 bg-gray-50';
+  }
+};
+
 interface Notification {
   id: string;
   type: 'task' | 'deadline' | 'milestone' | 'budget' | 'team' | 'system' | 'approval';
@@ -105,27 +128,6 @@ export function NotificationCenter() {
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
-  const getNotificationIcon = (type: Notification['type']) => {
-    switch (type) {
-      case 'task': return User;
-      case 'deadline': return Clock;
-      case 'milestone': return CheckCircle2;
-      case 'budget': return DollarSign;
-      case 'team': return Users;
-      case 'system': return Settings;
-      case 'approval': return FileText;
-      default: return Bell;
-    }
-  };
-
-  const getPriorityColor = (priority: Notification['priority']) => {
-    switch (priority) {
-      case 'urgent': return 'text-red-600 bg-red-50';
-      case 'high': return 'text-orange-600 bg-orange-50';
-      case 'medium': return 'text-blue-600 bg-blue-50';
-      case 'low': return 'text-gray-600 bg-gray-50';
-    }
-  };
 
   const filteredNotifications = notifications.filter(notification => {
     if (activeTab === 'all') return true;

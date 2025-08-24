@@ -59,12 +59,13 @@ export interface Project {
 }
 
 interface ProjectStudyLinkerProps {
-  project: Project;
-  availableStudies: FeasibilityStudy[];
+  projectId?: string;
+  project?: Project;
+  availableStudies?: FeasibilityStudy[];
   linkedStudies: FeasibilityStudy[];
-  onLinkStudy: (projectId: string, studyId: string) => void;
-  onUnlinkStudy: (projectId: string, studyId: string) => void;
-  onCreateNewStudy: (projectId: string, studyData: Partial<FeasibilityStudy>) => void;
+  onLinkStudy?: (projectId: string, studyId: string) => void;
+  onUnlinkStudy?: (projectId: string, studyId: string) => void;
+  onCreateNewStudy?: (projectId: string, studyData: Partial<FeasibilityStudy>) => void;
 }
 
 export function ProjectStudyLinker({
@@ -79,9 +80,9 @@ export function ProjectStudyLinker({
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [newStudyData, setNewStudyData] = useState({
-    title: `دراسة جدوى - ${project.name}`,
-    description: project.description,
-    category: project.category
+    title: `دراسة جدوى - ${project?.name || 'مشروع جديد'}`,
+    description: project?.description || '',
+    category: project?.category || ''
   });
 
   const getStatusColor = (status: FeasibilityStudy['status']) => {
@@ -138,22 +139,24 @@ export function ProjectStudyLinker({
     }
   };
 
-  const filteredStudies = availableStudies.filter(study => {
+  const filteredStudies = availableStudies?.filter(study => {
     const matchesSearch = study.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          study.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || study.status === statusFilter;
-    const isNotLinked = !project.linkedStudies.includes(study.id);
+    const isNotLinked = !project?.linkedStudies?.includes(study.id);
     
     return matchesSearch && matchesStatus && isNotLinked;
-  });
+  }) || [];
 
   const handleCreateStudy = () => {
-    onCreateNewStudy(project.id, newStudyData);
+    if (project?.id && onCreateNewStudy) {
+      onCreateNewStudy(project.id, newStudyData);
+    }
     setIsCreateDialogOpen(false);
     setNewStudyData({
-      title: `دراسة جدوى - ${project.name}`,
-      description: project.description,
-      category: project.category
+      title: `دراسة جدوى - ${project?.name || 'مشروع جديد'}`,
+      description: project?.description || '',
+      category: project?.category || ''
     });
   };
 
@@ -166,7 +169,7 @@ export function ProjectStudyLinker({
             ربط دراسات الجدوى
           </h2>
           <p className="text-gray-600 dark:text-gray-300 mt-1">
-            اربط مشروع "{project.name}" بدراسات الجدوى ذات الصلة
+            اربط مشروع "{project?.name || 'غير محدد'}" بدراسات الجدوى ذات الصلة
           </p>
         </div>
         
@@ -181,7 +184,7 @@ export function ProjectStudyLinker({
             <DialogHeader>
               <DialogTitle>إنشاء دراسة جدوى جديدة</DialogTitle>
               <DialogDescription>
-                إنشاء دراسة جدوى مرتبطة بمشروع "{project.name}"
+                إنشاء دراسة جدوى مرتبطة بمشروع "{project?.name || 'غير محدد'}"
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
@@ -298,7 +301,7 @@ export function ProjectStudyLinker({
                     <Button 
                       variant="outline" 
                       size="sm"
-                      onClick={() => onUnlinkStudy(project.id, study.id)}
+                      onClick={() => project?.id && onUnlinkStudy?.(project.id, study.id)}
                     >
                       <Unlink className="h-4 w-4 mr-1" />
                       إلغاء الربط
@@ -415,7 +418,7 @@ export function ProjectStudyLinker({
                     </Button>
                     <Button 
                       size="sm"
-                      onClick={() => onLinkStudy(project.id, study.id)}
+                      onClick={() => project?.id && onLinkStudy?.(project.id, study.id)}
                     >
                       <Link className="h-4 w-4 mr-1" />
                       ربط

@@ -590,7 +590,7 @@ function TeamStep({ data, updateData, errors }: any) {
             <Checkbox
               id="externalConsultants"
               checked={data.externalConsultants}
-              onCheckedChange={(checked) => updateData('externalConsultants', checked)}
+              onChange={(e) => updateData('externalConsultants', e.target.checked)}
             />
             <Label htmlFor="externalConsultants">
               هل تحتاج إلى استشاريين خارجيين؟
@@ -607,7 +607,7 @@ function TeamStep({ data, updateData, errors }: any) {
               <Checkbox
                 id={role}
                 checked={data.keyRoles.includes(role)}
-                onCheckedChange={() => toggleRole(role)}
+                onChange={() => toggleRole(role)}
               />
               <Label htmlFor={role} className="text-sm">
                 {role}

@@ -116,7 +116,25 @@ export default function SettingsPage() {
         const response = await fetch('/api/settings');
         if (response.ok) {
           const data = await response.json();
-          setSettings(data);
+          // Map API shape -> UI shape safely
+          const fullName: string = data.name || '';
+          const nameParts = fullName.split(' ').filter(Boolean);
+          const first = nameParts[0] || '';
+          const last = nameParts.slice(1).join(' ') || '';
+
+          setSettings((prev) => ({
+            ...prev,
+            firstName: first,
+            lastName: last,
+            email: data.email || prev.email,
+            phone: data.phone || prev.phone,
+            company: data.company || prev.company,
+            location: data.location || prev.location,
+            bio: data.bio || prev.bio,
+            avatar: data.image || prev.avatar,
+            language: data.language || prev.language,
+            theme: data.theme || prev.theme,
+          }));
         }
       } catch (error) {
         console.error('Error loading settings:', error);
@@ -180,12 +198,25 @@ export default function SettingsPage() {
   const handleSaveSettings = async () => {
     setLoading(true);
     try {
+      // Construct payload matching API schema
+      const payload = {
+        name: `${settings.firstName} ${settings.lastName}`.trim() || settings.email,
+        email: settings.email,
+        phone: settings.phone || undefined,
+        company: settings.company || undefined,
+        location: settings.location || undefined,
+        bio: settings.bio || undefined,
+        image: settings.avatar || undefined,
+        language: settings.language,
+        theme: settings.theme,
+      };
+
       const response = await fetch('/api/settings', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(settings),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -321,7 +352,7 @@ export default function SettingsPage() {
                   <Avatar className="h-20 w-20">
                     <AvatarImage src={settings.avatar} alt="Profile" />
                     <AvatarFallback className="text-lg">
-                      {settings.firstName.charAt(0)}{settings.lastName.charAt(0)}
+                      {(settings.firstName?.charAt(0) || '')}{(settings.lastName?.charAt(0) || '')}
                     </AvatarFallback>
                   </Avatar>
                   <div className="space-y-1">

@@ -25,7 +25,7 @@ export function encrypt(text: string): string {
   try {
     const key = getEncryptionKey();
     const iv = crypto.randomBytes(IV_LENGTH);
-    const cipher = crypto.createCipher(ALGORITHM, key);
+    const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
     cipher.setAAD(Buffer.from('additional-data'));
     
     let encrypted = cipher.update(text, 'utf8', 'hex');
@@ -56,7 +56,7 @@ export function decrypt(encryptedText: string): string {
     const iv = Buffer.from(ivHex, 'hex');
     const tag = Buffer.from(tagHex, 'hex');
     
-    const decipher = crypto.createDecipher(ALGORITHM, key);
+    const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
     decipher.setAAD(Buffer.from('additional-data'));
     decipher.setAuthTag(tag);
     
@@ -156,7 +156,7 @@ export function verifyHash(data: string, hash: string): boolean {
 export function encryptSessionId(sessionId: string): string {
   const key = getEncryptionKey();
   const iv = crypto.randomBytes(IV_LENGTH);
-  const cipher = crypto.createCipher('aes-256-cbc', key);
+  const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
   
   let encrypted = cipher.update(sessionId, 'utf8', 'hex');
   encrypted += cipher.final('hex');
@@ -176,7 +176,7 @@ export function decryptSessionId(encryptedSessionId: string): string {
   }
   
   const iv = Buffer.from(ivHex, 'hex');
-  const decipher = crypto.createDecipher('aes-256-cbc', key);
+  const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv);
   
   let decrypted = decipher.update(encrypted, 'hex', 'utf8');
   decrypted += decipher.final('utf8');

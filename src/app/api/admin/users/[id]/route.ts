@@ -6,51 +6,42 @@ import { UserRole } from '@prisma/client';
 import { z } from 'zod';
 
 const updateUserSchema = z.object({
-  firstName: z.string().min(1, 'الاسم الأول مطلوب').optional(),
-  lastName: z.string().min(1, 'الاسم الأخير مطلوب').optional(),
+  name: z.string().min(1, 'الاسم مطلوب').optional(),
   email: z.string().email('بريد إلكتروني غير صحيح').optional(),
   role: z.nativeEnum(UserRole).optional(),
-  isActive: z.boolean().optional(),
   phone: z.string().optional(),
-  jobTitle: z.string().optional(),
   company: z.string().optional(),
   location: z.string().optional(),
   bio: z.string().optional(),
 });
 
-interface Params {
-  params: {
-    id: string;
-  };
-}
-
-export async function GET(request: NextRequest, { params }: Params) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const authResult = await withAuth(request, Permission.READ_USER);
     if (authResult instanceof NextResponse) {
       return authResult;
     }
 
-    const userId = params.id;
+    const resolvedParams = await params;
+    const userId = resolvedParams.id;
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: {
         id: true,
-        firstName: true,
-        lastName: true,
+        name: true,
         email: true,
         role: true,
-        avatar: true,
-        isActive: true,
+        image: true,
         phone: true,
-        jobTitle: true,
         company: true,
         location: true,
         bio: true,
         createdAt: true,
         updatedAt: true,
-        lastLoginAt: true,
         _count: {
           select: {
             projects: true,
@@ -98,7 +89,10 @@ export async function GET(request: NextRequest, { params }: Params) {
   }
 }
 
-export async function PUT(request: NextRequest, { params }: Params) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const authResult = await withAuth(request, Permission.UPDATE_USER);
     if (authResult instanceof NextResponse) {
@@ -106,7 +100,8 @@ export async function PUT(request: NextRequest, { params }: Params) {
     }
 
     const { userRole } = authResult;
-    const userId = params.id;
+    const resolvedParams = await params;
+    const userId = resolvedParams.id;
     const body = await request.json();
     const validatedData = updateUserSchema.parse(body);
 
@@ -151,14 +146,11 @@ export async function PUT(request: NextRequest, { params }: Params) {
       data: validatedData,
       select: {
         id: true,
-        firstName: true,
-        lastName: true,
+        name: true,
         email: true,
         role: true,
-        avatar: true,
-        isActive: true,
+        image: true,
         phone: true,
-        jobTitle: true,
         company: true,
         location: true,
         bio: true,
@@ -188,7 +180,10 @@ export async function PUT(request: NextRequest, { params }: Params) {
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: Params) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const authResult = await withAuth(request, Permission.DELETE_USER);
     if (authResult instanceof NextResponse) {
@@ -196,7 +191,8 @@ export async function DELETE(request: NextRequest, { params }: Params) {
     }
 
     const { session, userRole } = authResult;
-    const userId = params.id;
+    const resolvedParams = await params;
+    const userId = resolvedParams.id;
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({

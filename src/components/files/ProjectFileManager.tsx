@@ -465,6 +465,20 @@ export function ProjectFileManager({ projectId, canEdit = true }: ProjectFileMan
   );
 }
 
+// Helper functions moved outside component
+const getFileIconHelper = (file: ProjectFile) => {
+  const category = CATEGORIES.find(cat => cat.value === file.category);
+  return category ? category.icon : File;
+};
+
+const formatFileSize = (bytes: number): string => {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+};
+
 // File Card Component
 function FileCard({ 
   file, 
@@ -479,7 +493,7 @@ function FileCard({
   onToggleStar: (id: string) => void;
   canEdit: boolean;
 }) {
-  const FileIcon = getFileIcon(file);
+  const FileIcon = getFileIconHelper(file);
   const category = CATEGORIES.find(cat => cat.value === file.category);
 
   if (viewMode === 'list') {

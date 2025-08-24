@@ -131,10 +131,6 @@ export function ProjectTeamManager({ projectId, canManage = false }: ProjectTeam
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
 
-  const getRoleInfo = (role: TeamMember['role']) => {
-    return ROLES.find(r => r.value === role) || ROLES[4];
-  };
-
   const getStatusColor = (status: TeamMember['status']) => {
     switch (status) {
       case 'active': return 'bg-green-500';
@@ -365,6 +361,36 @@ export function ProjectTeamManager({ projectId, canManage = false }: ProjectTeam
     </div>
   );
 }
+
+// Helper functions moved outside component
+const getRoleInfo = (role: TeamMember['role']) => {
+  return ROLES.find(r => r.value === role) || ROLES[4];
+};
+
+const getStatusColor = (status: TeamMember['status']) => {
+  switch (status) {
+    case 'active': return 'bg-green-500';
+    case 'away': return 'bg-yellow-500';
+    case 'busy': return 'bg-red-500';
+    case 'offline': return 'bg-gray-500';
+  }
+};
+
+const getStatusLabel = (status: TeamMember['status']) => {
+  switch (status) {
+    case 'active': return 'متاح';
+    case 'away': return 'غير متاح';
+    case 'busy': return 'مشغول';
+    case 'offline': return 'غير متصل';
+  }
+};
+
+const getPerformanceColor = (performance: number) => {
+  if (performance >= 90) return 'text-green-600';
+  if (performance >= 70) return 'text-blue-600';
+  if (performance >= 50) return 'text-yellow-600';
+  return 'text-red-600';
+};
 
 function MemberCard({ 
   member, 

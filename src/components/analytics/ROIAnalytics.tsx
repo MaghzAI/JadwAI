@@ -58,18 +58,20 @@ interface ROIData {
 }
 
 interface ROIAnalyticsProps {
-  projects: ROIData[];
-  selectedPeriod: string;
+  projects?: ROIData[];
+  data?: ROIData[];
+  selectedPeriod?: string;
 }
 
-export function ROIAnalytics({ projects, selectedPeriod }: ROIAnalyticsProps) {
+export function ROIAnalytics({ projects, data, selectedPeriod }: ROIAnalyticsProps) {
   const [selectedProject, setSelectedProject] = useState<string>('all');
   const [viewMode, setViewMode] = useState<'overview' | 'detailed' | 'comparison'>('overview');
   const [chartType, setChartType] = useState<'line' | 'area' | 'bar'>('area');
 
+  const projectsData = projects || data || [];
   const filteredProjects = selectedProject === 'all' 
-    ? projects 
-    : projects.filter(p => p.projectId === selectedProject);
+    ? projectsData 
+    : projectsData.filter(p => p.projectId === selectedProject);
 
   const getROIColor = (roi: number) => {
     if (roi >= 30) return 'text-green-600';
@@ -108,7 +110,7 @@ export function ROIAnalytics({ projects, selectedPeriod }: ROIAnalyticsProps) {
     : 0;
 
   // Prepare cash flow chart data
-  const consolidatedCashFlow = selectedProject === 'all' && projects.length > 0
+  const consolidatedCashFlow = selectedProject === 'all' && projects && projects.length > 0
     ? projects[0].cashFlowData.map((monthData, index) => ({
         month: monthData.month,
         totalInflow: projects.reduce((sum, p) => sum + (p.cashFlowData[index]?.inflow || 0), 0),
@@ -138,7 +140,7 @@ export function ROIAnalytics({ projects, selectedPeriod }: ROIAnalyticsProps) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">جميع المشاريع</SelectItem>
-              {projects.map(project => (
+              {projects?.map(project => (
                 <SelectItem key={project.projectId} value={project.projectId}>
                   {project.projectName}
                 </SelectItem>
@@ -503,28 +505,12 @@ export function ROIAnalytics({ projects, selectedPeriod }: ROIAnalyticsProps) {
             <CardContent>
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span>مشاريع ممتازة ({projects.filter(p => p.roiCategory === 'excellent').length})</span>
+                  <span>مشاريع ممتازة ({projects?.filter(p => p.roiCategory === 'excellent').length || 0})</span>
                   <span className="text-green-600 font-semibold">
-                    {((projects.filter(p => p.roiCategory === 'excellent').length / projects.length) * 100).toFixed(0)}%
+                    {projects && projects.length > 0 ? ((projects.filter(p => p.roiCategory === 'excellent').length / projects.length) * 100).toFixed(0) : 0}%
                   </span>
                 </div>
-                <Progress value={(projects.filter(p => p.roiCategory === 'excellent').length / projects.length) * 100} />
-                
-                <div className="flex justify-between items-center">
-                  <span>مشاريع جيدة ({projects.filter(p => p.roiCategory === 'good').length})</span>
-                  <span className="text-blue-600 font-semibold">
-                    {((projects.filter(p => p.roiCategory === 'good').length / projects.length) * 100).toFixed(0)}%
-                  </span>
-                </div>
-                <Progress value={(projects.filter(p => p.roiCategory === 'good').length / projects.length) * 100} />
-                
-                <div className="flex justify-between items-center">
-                  <span>مشاريع متوسطة ({projects.filter(p => p.roiCategory === 'average').length})</span>
-                  <span className="text-yellow-600 font-semibold">
-                    {((projects.filter(p => p.roiCategory === 'average').length / projects.length) * 100).toFixed(0)}%
-                  </span>
-                </div>
-                <Progress value={(projects.filter(p => p.roiCategory === 'average').length / projects.length) * 100} />
+                <Progress value={projects && projects.length > 0 ? (projects.filter(p => p.roiCategory === 'excellent').length / projects.length) * 100 : 0} />
               </div>
             </CardContent>
           </Card>
@@ -536,7 +522,7 @@ export function ROIAnalytics({ projects, selectedPeriod }: ROIAnalyticsProps) {
             <CardContent>
               <div className="space-y-3">
                 {projects
-                  .sort((a, b) => b.roi - a.roi)
+                  ?.sort((a, b) => b.roi - a.roi)
                   .slice(0, 5)
                   .map((project, index) => (
                     <div key={project.projectId} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded">
@@ -557,7 +543,7 @@ export function ROIAnalytics({ projects, selectedPeriod }: ROIAnalyticsProps) {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {projects.filter(p => p.roi < 10).map((project) => (
+                {projects?.filter(p => p.roi < 10).map((project) => (
                   <div key={project.projectId} className="flex items-center gap-2 p-2 bg-red-50 dark:bg-red-900/20 rounded">
                     <AlertTriangle className="h-4 w-4 text-red-600" />
                     <div className="flex-1">
@@ -567,7 +553,7 @@ export function ROIAnalytics({ projects, selectedPeriod }: ROIAnalyticsProps) {
                   </div>
                 ))}
                 
-                {projects.filter(p => p.paybackPeriod > 24).map((project) => (
+                {projects?.filter(p => p.paybackPeriod > 24).map((project) => (
                   <div key={`payback-${project.projectId}`} className="flex items-center gap-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 rounded">
                     <Calendar className="h-4 w-4 text-yellow-600" />
                     <div className="flex-1">

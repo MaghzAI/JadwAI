@@ -1,22 +1,30 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 import { 
-  FolderOpen, 
-  Clock, 
-  CheckCircle2, 
-  AlertTriangle,
-  TrendingUp,
-  Calendar
+  Briefcase, 
+  TrendingUp, 
+  Users, 
+  Calendar,
+  Target,
+  CheckCircle2,
+  Folder,
+  Timer,
+  AlertCircle
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useProjects } from '@/hooks/useProjects';
+import { ProjectStatus } from '@prisma/client';
+
+import { useEffect, useState, useCallback } from 'react';
 
 interface ProjectStats {
   totalProjects: number;
   activeProjects: number;
   completedProjects: number;
+  onHoldProjects: number;
   overdue: number;
   thisMonth: number;
   completionRate: number;
@@ -29,44 +37,69 @@ interface ProjectStatsWidgetProps {
 }
 
 export function ProjectStatsWidget({ className = '' }: ProjectStatsWidgetProps) {
+  const { projects, loading, error } = useProjects();
   const [stats, setStats] = useState<ProjectStats>({
     totalProjects: 0,
     activeProjects: 0,
     completedProjects: 0,
+    onHoldProjects: 0,
     overdue: 0,
     thisMonth: 0,
     completionRate: 0,
     avgDuration: 0,
     upcomingDeadlines: 0
   });
-  const [loading, setLoading] = useState(true);
+
+  const calculateStats = useCallback(() => {
+    const now = new Date();
+    const thisMonth = now.getMonth();
+    const thisYear = now.getFullYear();
+
+    const totalProjects = projects.length;
+    const activeProjects = projects.filter(p => p.status === ProjectStatus.ACTIVE).length;
+    const completedProjects = projects.filter(p => p.status === ProjectStatus.COMPLETED).length;
+    const onHoldProjects = projects.filter(p => p.status === ProjectStatus.ARCHIVED).length;
+    
+    // Projects created this month
+    const thisMonthProjects = projects.filter(p => {
+      const createdDate = new Date(p.createdAt);
+      return createdDate.getMonth() === thisMonth && createdDate.getFullYear() === thisYear;
+    }).length;
+
+    // Mock overdue projects (would come from real milestone/task data)
+    const overdue = Math.floor(activeProjects * 0.1); // Mock: 10% of active projects are overdue
+    
+    // Mock upcoming deadlines (would come from real milestone/task data)
+    const upcomingDeadlines = Math.floor(activeProjects * 0.2); // Mock: 20% have upcoming deadlines
+
+    // Calculate completion rate
+    const completionRate = totalProjects > 0 ? Math.round((completedProjects / totalProjects) * 100) : 0;
+
+    // Mock average duration for completed projects (would come from real project data)
+    const totalDuration = completedProjects > 0 ? 45 * completedProjects : 0; // Mock: 45 days average
+
+    setStats({
+      totalProjects,
+      activeProjects,
+      completedProjects,
+      onHoldProjects,
+      overdue,
+      thisMonth: thisMonthProjects,
+      completionRate,
+      avgDuration: totalProjects > 0 ? Math.round(totalDuration / totalProjects) : 0,
+      upcomingDeadlines
+    });
+  }, [projects]);
 
   useEffect(() => {
-    fetchProjectStats();
-  }, []);
-
-  const fetchProjectStats = async () => {
-    try {
-      // سيتم استبدال هذا بـ API call حقيقي
-      // Mock data for now
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setStats({
-        totalProjects: 24,
-        activeProjects: 16,
-        completedProjects: 8,
-        overdue: 3,
-        thisMonth: 5,
-        completionRate: 75,
-        avgDuration: 45,
-        upcomingDeadlines: 7
-      });
-    } catch (error) {
-      console.error('Error fetching project stats:', error);
-    } finally {
-      setLoading(false);
+    if (projects.length > 0) {
+      calculateStats();
     }
-  };
+  }, [projects, calculateStats]);
+
+  const formatDuration = () => {
+    // TO DO: implement formatDuration function
+  }
 
   const getStatusColor = (status: 'active' | 'completed' | 'overdue') => {
     switch (status) {
@@ -82,7 +115,7 @@ export function ProjectStatsWidget({ className = '' }: ProjectStatsWidgetProps) 
       <Card className={`${className}`}>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <FolderOpen className="h-5 w-5" />
+            <Folder className="h-5 w-5" />
             إحصائيات المشاريع
           </CardTitle>
         </CardHeader>
@@ -100,11 +133,31 @@ export function ProjectStatsWidget({ className = '' }: ProjectStatsWidgetProps) 
     );
   }
 
+  if (error) {
+    return (
+      <Card className={`${className}`}>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Folder className="h-5 w-5" />
+            إحصائيات المشاريع
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-8 text-red-500 dark:text-red-400">
+            <AlertCircle className="h-12 w-12 mx-auto mb-3" />
+            <p>خطأ في تحميل الإحصائيات</p>
+            <p className="text-sm text-gray-500 mt-1">يرجى المحاولة مرة أخرى</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className={`${className}`}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <FolderOpen className="h-5 w-5" />
+          <Folder className="h-5 w-5" />
           إحصائيات المشاريع
         </CardTitle>
       </CardHeader>
@@ -137,7 +190,7 @@ export function ProjectStatsWidget({ className = '' }: ProjectStatsWidgetProps) 
           
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-blue-500" />
+              <Timer className="h-4 w-4 text-blue-500" />
               <span className="text-sm">نشطة</span>
             </div>
             <Badge className={getStatusColor('active')}>
@@ -157,7 +210,7 @@ export function ProjectStatsWidget({ className = '' }: ProjectStatsWidgetProps) 
 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-red-500" />
+              <AlertCircle className="h-4 w-4 text-red-500" />
               <span className="text-sm">متأخرة</span>
             </div>
             <Badge className={getStatusColor('overdue')}>

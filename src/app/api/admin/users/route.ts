@@ -7,8 +7,7 @@ import { z } from 'zod';
 
 const createUserSchema = z.object({
   email: z.string().email('بريد إلكتروني غير صحيح'),
-  firstName: z.string().min(1, 'الاسم الأول مطلوب'),
-  lastName: z.string().min(1, 'الاسم الأخير مطلوب'),
+  name: z.string().min(1, 'الاسم مطلوب'),
   role: z.nativeEnum(UserRole).default(UserRole.USER),
   password: z.string().min(8, 'كلمة المرور يجب أن تكون 8 أحرف على الأقل'),
 });
@@ -47,14 +46,14 @@ export async function GET(request: NextRequest) {
         where,
         select: {
           id: true,
-          firstName: true,
-          lastName: true,
+          name: true,
           email: true,
           role: true,
-          avatar: true,
-          isActive: true,
+          image: true,
+          phone: true,
+          company: true,
           createdAt: true,
-          lastLoginAt: true,
+          updatedAt: true,
           _count: {
             select: {
               projects: true,
@@ -118,20 +117,18 @@ export async function POST(request: NextRequest) {
     const newUser = await prisma.user.create({
       data: {
         email: validatedData.email,
-        firstName: validatedData.firstName,
-        lastName: validatedData.lastName,
+        name: validatedData.name,
         role: validatedData.role,
         password: hashedPassword,
-        isActive: true,
       },
       select: {
         id: true,
-        firstName: true,
-        lastName: true,
+        name: true,
         email: true,
         role: true,
-        avatar: true,
-        isActive: true,
+        image: true,
+        phone: true,
+        company: true,
         createdAt: true,
       },
     });

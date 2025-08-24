@@ -600,7 +600,7 @@ export default function ProjectDetailPage() {
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            دراسات الجدوى ({project.feasibilityStudies.length})
+            دراسات الجدوى ({project.feasibilityStudies?.length || 0})
           </CardTitle>
           <Button asChild>
             <Link href={`/studies/new?projectId=${project.id}`}>
@@ -610,7 +610,7 @@ export default function ProjectDetailPage() {
           </Button>
         </CardHeader>
         <CardContent>
-          {project.feasibilityStudies.length === 0 ? (
+          {(project.feasibilityStudies?.length || 0) === 0 ? (
             <div className="text-center py-8">
               <FileText className="mx-auto h-12 w-12 text-gray-400 mb-4" />
               <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
@@ -628,7 +628,7 @@ export default function ProjectDetailPage() {
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {project.feasibilityStudies.map((study) => (
+              {(project.feasibilityStudies || []).map((study) => (
                 <Card key={study.id} className="hover:shadow-md transition-shadow cursor-pointer">
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">

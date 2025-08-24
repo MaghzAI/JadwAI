@@ -106,7 +106,7 @@ export default function StudyDetailPage() {
   useEffect(() => {
     const fetchStudy = async () => {
       try {
-        const response = await fetch(`/api/studies/${params.id}`);
+        const response = await fetch(`/api/studies/simple/${params.id}`);
         if (!response.ok) {
           throw new Error('فشل في جلب بيانات الدراسة');
         }
@@ -206,7 +206,7 @@ export default function StudyDetailPage() {
     }
 
     try {
-      const response = await fetch(`/api/studies/${params.id}`, {
+      const response = await fetch(`/api/studies/simple/${params.id}`, {
         method: 'DELETE',
       });
       

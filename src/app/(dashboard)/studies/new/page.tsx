@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
@@ -93,13 +93,29 @@ export default function NewStudyPage() {
     }
   ];
 
-  // Mock projects - سيتم استبدالها بـ API call
-  const projects = [
+  const [projects, setProjects] = useState([
     { id: 1, name: 'مطعم الأصالة', type: 'مطعم' },
     { id: 2, name: 'متجر الإلكترونيات الذكية', type: 'تجارة إلكترونية' },
     { id: 3, name: 'مركز التدريب التقني', type: 'تعليم' },
-    { id: 4, name: 'مركز اللياقة البدنية', type: 'خدمات' }
-  ];
+    { id: 4, name: 'مركز اللياقة البدنية', type: 'خدمات' },
+    { id: 5, name: 'متجر الأزياء العصرية', type: 'أزياء' }
+  ]);
+
+  // Load projects from API
+  useEffect(() => {
+    const loadProjects = async () => {
+      try {
+        const response = await fetch('/api/projects/simple');
+        if (response.ok) {
+          const data = await response.json();
+          setProjects(data.projects);
+        }
+      } catch (error) {
+        console.log('Using fallback projects data');
+      }
+    };
+    loadProjects();
+  }, []);
 
   const updateFormData = (key: string, value: any) => {
     setFormData(prev => ({ ...prev, [key]: value }));
@@ -121,8 +137,8 @@ export default function NewStudyPage() {
     setIsGenerating(true);
     
     try {
-      // Create the study using the API
-      const response = await fetch('/api/studies', {
+      // Create the study using the simple API for development
+      const response = await fetch('/api/studies/simple', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -22,8 +22,15 @@ function getMessage(error?: string | null) {
   }
 }
 
-export default function AuthErrorPage({ searchParams }: { searchParams: { error?: string } }) {
-  const message = getMessage(searchParams?.error)
+interface AuthErrorPageProps {
+  searchParams: Promise<{
+    error?: string
+  }>
+}
+
+export default async function AuthErrorPage({ searchParams }: AuthErrorPageProps) {
+  const params = await searchParams;
+  const message = getMessage(params?.error)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">

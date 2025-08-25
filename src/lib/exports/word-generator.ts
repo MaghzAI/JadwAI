@@ -117,6 +117,6 @@ export class WordGenerator {
     });
 
     const buffer = await Packer.toBuffer(document);
-    return new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+    return new Blob([new Uint8Array(buffer)], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
   }
 }

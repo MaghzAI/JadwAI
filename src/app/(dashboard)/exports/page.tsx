@@ -25,11 +25,28 @@ export default function ExportsPage() {
         </TabsList>
         
         <TabsContent value="exports">
-          <ExportManager />
+          <ExportManager studyData={{
+            id: '1',
+            title: 'دراسة تجريبية',
+            description: 'دراسة تجريبية للاختبار',
+            industry: 'تقنية',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            executiveSummary: {
+              overview: 'نظرة عامة تجريبية',
+              objectives: 'هدف أول، هدف ثاني',
+              keyFindings: 'نتائج رئيسية',
+              recommendations: 'توصيات'
+            }
+          }} />
         </TabsContent>
         
         <TabsContent value="sharing">
-          <ProjectSharing />
+          <ProjectSharing 
+            projectId="1"
+            projectTitle="مشروع تجريبي" 
+            isOwner={true}
+          />
         </TabsContent>
       </Tabs>
     </div>

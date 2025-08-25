@@ -210,7 +210,7 @@ export class PDFGenerator {
     this.currentY = (this.doc as any).lastAutoTable.finalY + 10;
   }
 
-  public generateStudyPDF(data: StudyData): Uint8Array {
+  public generateStudyPDF(data: StudyData): ArrayBuffer {
     // Cover Page
     this.addCoverPage(data);
     

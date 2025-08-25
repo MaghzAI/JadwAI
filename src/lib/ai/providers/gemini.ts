@@ -4,8 +4,8 @@ import { BaseAIProvider, GenerationOptions } from './base';
 export class GeminiService extends BaseAIProvider {
   name = 'gemini';
   displayName = 'Google Gemini';
-  private genAI: GoogleGenerativeAI;
-  private model: any;
+  private genAI: GoogleGenerativeAI | null = null;
+  private model: any = null;
 
   constructor() {
     super();

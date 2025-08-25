@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { DateDisplay } from '@/components/ui/date-display';
 import { 
   Plus,
   Search,
@@ -310,7 +311,7 @@ export default function StudiesPage() {
                   <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
                     <div className="flex items-center gap-1">
                       <Calendar className="h-3 w-3" />
-                      <span>{new Date(study.updatedAt).toLocaleDateString('ar-SA')}</span>
+                      <DateDisplay date={study.updatedAt} />
                     </div>
                   </div>
                   <div className="text-xs text-gray-500 dark:text-gray-400">

@@ -97,7 +97,7 @@ export function ExportManager({ studyData, disabled = false }: ExportManagerProp
         case 'excel':
           const excelGenerator = new ExcelGenerator();
           const excelBuffer = await excelGenerator.generateFinancialExcel(studyData);
-          blob = new Blob([excelBuffer], { 
+          blob = new Blob([new Uint8Array(excelBuffer)], { 
             type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
           });
           filename = `${studyData.title}_البيانات_المالية.xlsx`;

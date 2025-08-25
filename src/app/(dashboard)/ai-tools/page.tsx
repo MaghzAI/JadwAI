@@ -1,10 +1,6 @@
-import { Metadata } from 'next';
-import { AIProviderSelector } from '@/components/ai/AIProviderSelector';
+'use client';
 
-export const metadata: Metadata = {
-  title: 'أدوات الذكاء الاصطناعي | منصة دراسات الجدوى',
-  description: 'إدارة وتكوين مقدمي خدمات الذكاء الاصطناعي',
-};
+import { AIProviderSelector } from '@/components/ai/AIProviderSelector';
 
 export default function AIToolsPage() {
   return (
@@ -16,7 +12,11 @@ export default function AIToolsPage() {
         </p>
       </div>
 
-      <AIProviderSelector />
+      <AIProviderSelector 
+        onProviderChange={(provider, settings) => {
+          console.log('Provider changed:', provider, settings);
+        }}
+      />
     </div>
   );
 }

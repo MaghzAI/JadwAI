@@ -1,18 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { Metadata } from 'next';
-import Link from 'next/link';
-import { supabaseAuth } from '@/lib/auth/supabase';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/lib/supabase';
+import Link from 'next/link';
 
-export const metadata: Metadata = {
-  title: 'استعادة كلمة المرور',
-  description: 'أدخل بريدك الإلكتروني لإرسال رابط استعادة كلمة المرور',
-};
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -27,7 +23,10 @@ export default function ForgotPasswordPage() {
     }
     setLoading(true);
     try {
-      const { error } = await supabaseAuth.resetPassword(email);
+      if (!supabase) {
+        throw new Error('Supabase not configured');
+      }
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
       if (error) throw error;
       toast({
         title: 'تم الإرسال',

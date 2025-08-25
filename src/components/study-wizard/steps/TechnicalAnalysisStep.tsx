@@ -105,7 +105,7 @@ export default function TechnicalAnalysisStep() {
       technicalAnalysis: formData,
     });
     
-    updateStepStatus(3, isCompleted, isValid);
+    updateStepStatus(3, Boolean(isCompleted), isValid);
   }, [formData, updateData, updateStepStatus]);
 
   const validateForm = (): boolean => {

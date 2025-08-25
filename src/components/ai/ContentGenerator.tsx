@@ -257,7 +257,9 @@ export function ContentGenerator({ type, projectData, onContentGenerated, classN
                   ))}
                 </ul>
               ) : (
-                <p className="text-sm text-gray-600 dark:text-gray-400">{value}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {typeof value === 'object' ? JSON.stringify(value) : String(value)}
+                </p>
               )}
             </div>
           ))}

@@ -56,7 +56,15 @@ export default function RiskAssessmentStep() {
   useEffect(() => {
     const existingData = state.data.riskAssessment;
     if (existingData) {
-      setFormData(existingData);
+      setFormData({
+        risks: existingData.risks || [],
+        overallRiskLevel: existingData.overallRiskLevel || 'medium',
+        riskManagementStrategy: existingData.riskManagementStrategy || existingData.mitigation?.join('\n') || '',
+        contingencyPlan: existingData.contingencyPlan || '',
+        riskMonitoring: existingData.riskMonitoring || existingData.monitoring || '',
+        successFactors: existingData.successFactors || '',
+        assumptions: existingData.assumptions || '',
+      });
     }
   }, [state.data.riskAssessment]);
 

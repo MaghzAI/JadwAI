@@ -50,7 +50,7 @@ export default function StudyWizardPage() {
         </div>
 
         {/* Wizard Container */}
-        <StudyWizardProvider>
+        <StudyWizardProvider projectId="1">
           <div className="max-w-5xl mx-auto">
             <StudyWizard />
           </div>

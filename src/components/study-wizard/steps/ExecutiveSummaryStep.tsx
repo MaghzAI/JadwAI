@@ -76,7 +76,7 @@ export default function ExecutiveSummaryStep() {
   // تحديث البيانات والتحقق من الصحة
   useEffect(() => {
     const isValid = validateForm();
-    const isCompleted = isValid && formData.projectName && formData.overview;
+    const isCompleted = Boolean(isValid && formData.projectName && formData.overview);
     
     updateData({
       executiveSummary: formData,

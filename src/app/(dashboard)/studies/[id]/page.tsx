@@ -75,7 +75,20 @@ interface FeasibilityStudy {
     industry: string;
   };
   executiveSummary: string | null;
-  marketAnalysis: string | null;
+  marketAnalysis: {
+    marketSize: string;
+    growthRate: string;
+    customerSegments: Array<{
+      name: string;
+      size: number;
+      characteristics: string;
+    }>;
+    competitors: Array<{
+      name: string;
+      marketShare: number;
+      strengths: string;
+    }>;
+  } | null;
   technicalAnalysis: string | null;
   financialAnalysis: string | null;
   riskAssessment: string | null;
@@ -111,6 +124,17 @@ export default function StudyDetailPage() {
           throw new Error('فشل في جلب بيانات الدراسة');
         }
         const data = await response.json();
+        
+        // Parse marketAnalysis if it's a string
+        if (data.marketAnalysis && typeof data.marketAnalysis === 'string') {
+          try {
+            data.marketAnalysis = JSON.parse(data.marketAnalysis);
+          } catch (e) {
+            console.error('Error parsing marketAnalysis:', e);
+            data.marketAnalysis = null;
+          }
+        }
+        
         setStudy(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'حدث خطأ غير متوقع');
@@ -588,8 +612,62 @@ export default function StudyDetailPage() {
             </CardHeader>
             <CardContent>
               {study.marketAnalysis ? (
-                <div className="prose prose-sm max-w-none dark:prose-invert">
-                  <div className="whitespace-pre-wrap">{study.marketAnalysis}</div>
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="border border-gray-200 dark:border-gray-800 rounded-lg p-4">
+                      <h4 className="font-medium mb-3 text-lg">مؤشرات السوق</h4>
+                      <div className="space-y-4">
+                        <div>
+                          <h5 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">حجم السوق</h5>
+                          <p className="text-gray-900 dark:text-white">
+                            {study.marketAnalysis.marketSize}
+                          </p>
+                        </div>
+                        <div>
+                          <h5 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">معدل النمو السنوي</h5>
+                          <p className="text-gray-900 dark:text-white">
+                            {study.marketAnalysis.growthRate}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="border border-gray-200 dark:border-gray-800 rounded-lg p-4">
+                      <h4 className="font-medium mb-3 text-lg">شرائح العملاء</h4>
+                      <div className="space-y-4">
+                        {study.marketAnalysis.customerSegments.map((segment, index) => (
+                          <div key={index} className="border-b border-gray-100 dark:border-gray-800 pb-3 last:border-0 last:pb-0">
+                            <div className="flex justify-between items-center mb-1">
+                              <h5 className="font-medium">{segment.name}</h5>
+                              <span className="text-sm text-gray-500">{segment.size}%</span>
+                            </div>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              {segment.characteristics}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {study.marketAnalysis.competitors && study.marketAnalysis.competitors.length > 0 && (
+                    <div className="border border-gray-200 dark:border-gray-800 rounded-lg p-4">
+                      <h4 className="font-medium mb-3 text-lg">تحليل المنافسين</h4>
+                      <div className="space-y-4">
+                        {study.marketAnalysis.competitors.map((competitor, index) => (
+                          <div key={index} className="border-b border-gray-100 dark:border-gray-800 pb-3 last:border-0 last:pb-0">
+                            <div className="flex justify-between items-center mb-1">
+                              <h5 className="font-medium">{competitor.name}</h5>
+                              <span className="text-sm text-gray-500">حصة سوقية: {competitor.marketShare}%</span>
+                            </div>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
+                              <span className="font-medium">نقاط القوة:</span> {competitor.strengths}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <p className="text-gray-500 italic">لم يتم إجراء تحليل السوق بعد</p>

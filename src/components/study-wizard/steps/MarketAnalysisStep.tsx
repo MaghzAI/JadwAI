@@ -89,10 +89,14 @@ export default function MarketAnalysisStep() {
       setFormData({
         marketSize: existingData.marketSize || '',
         growthRate: existingData.growthRate || '',
-        marketTrends: existingData.marketTrends || '',
+        marketTrends: Array.isArray(existingData.marketTrends) 
+          ? existingData.marketTrends.join('\n') 
+          : existingData.marketTrends || '',
         targetSegments: existingData.targetSegments || [],
         competitors: existingData.competitors || [],
-        marketBarriers: existingData.marketBarriers || '',
+        marketBarriers: Array.isArray(existingData.marketBarriers) 
+          ? existingData.marketBarriers.join('\n') 
+          : existingData.marketBarriers || '',
         marketOpportunities: existingData.marketOpportunities || '',
         seasonality: existingData.seasonality || '',
         regulatoryEnvironment: existingData.regulatoryEnvironment || '',
@@ -181,11 +185,12 @@ export default function MarketAnalysisStep() {
         ...prev,
         marketSize: aiContent.marketSize || prev.marketSize,
         growthRate: aiContent.growthRate || prev.growthRate,
-        keyTrends: Array.isArray(aiContent.keyTrends) ? aiContent.keyTrends : prev.keyTrends,
+        marketTrends: Array.isArray(aiContent.keyTrends) ? 
+          aiContent.keyTrends.join('\n• ') : prev.marketTrends,
         marketOpportunities: Array.isArray(aiContent.opportunities) ? 
           aiContent.opportunities.join('\n• ') : prev.marketOpportunities,
-        marketThreats: Array.isArray(aiContent.challenges) ? 
-          aiContent.challenges.join('\n• ') : prev.marketThreats
+        marketBarriers: Array.isArray(aiContent.challenges) ? 
+          aiContent.challenges.join('\n• ') : prev.marketBarriers
       }));
     }
   };
@@ -715,7 +720,7 @@ export default function MarketAnalysisStep() {
         projectData={{
           marketSize: formData.marketSize,
           growthRate: formData.growthRate,
-          keyTrends: formData.keyTrends,
+          keyTrends: formData.marketTrends.split('\n• ').filter(t => t.trim()),
           targetMarket: state.data.executiveSummary?.targetMarket || ''
         }}
         onContentGenerated={handleAIContentGenerated}

@@ -16,7 +16,10 @@ export default function TeamPage() {
         </p>
       </div>
 
-      <TeamManager />
+      <TeamManager 
+        currentUserId="1"
+        currentUserRole="owner"
+      />
     </div>
   );
 }

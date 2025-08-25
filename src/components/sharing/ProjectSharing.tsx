@@ -84,7 +84,7 @@ export function ProjectSharing({ projectId, projectTitle, isOwner }: ProjectShar
 
   // Direct share form
   const [shareEmail, setShareEmail] = useState('');
-  const [sharePermissions, setSharePermissionsValue] = useState<'view' | 'comment' | 'edit'>('view');
+  const [directSharePermission, setDirectSharePermission] = useState<'view' | 'comment' | 'edit'>('view');
   const [shareMessage, setShareMessage] = useState('');
 
   useEffect(() => {
@@ -182,7 +182,7 @@ export function ProjectSharing({ projectId, projectTitle, isOwner }: ProjectShar
       const newPermission: SharePermission = {
         id: Date.now().toString(),
         email: shareEmail,
-        permissions: sharePermissions,
+        permissions: directSharePermission,
         grantedAt: new Date().toISOString()
       };
 
@@ -190,7 +190,7 @@ export function ProjectSharing({ projectId, projectTitle, isOwner }: ProjectShar
       
       // Reset form
       setShareEmail('');
-      setSharePermissionsValue('view');
+      setDirectSharePermission('view');
       setShareMessage('');
       setShowShareDialog(false);
 
@@ -392,7 +392,7 @@ export function ProjectSharing({ projectId, projectTitle, isOwner }: ProjectShar
                     </div>
                     <div>
                       <Label>الصلاحيات</Label>
-                      <Select value={sharePermissions} onValueChange={(value: any) => setSharePermissionsValue(value)}>
+                      <Select value={directSharePermission} onValueChange={(value: any) => setDirectSharePermission(value)}>
                         <SelectTrigger>
                           <SelectValue />
                         </SelectTrigger>

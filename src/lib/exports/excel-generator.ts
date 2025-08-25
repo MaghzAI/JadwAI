@@ -29,7 +29,7 @@ export class ExcelGenerator {
       this.createRiskSheet(data.riskAssessment);
     }
 
-    return await this.workbook.xlsx.writeBuffer() as Buffer;
+    return await this.workbook.xlsx.writeBuffer() as unknown as Buffer;
   }
 
   private createSummarySheet(data: StudyData) {

@@ -15,45 +15,40 @@ import { AlertCircle, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 export default function StudyWizard() {
-  const { state, dispatch } = useStudyWizard();
-  const { currentStep, steps, isLoading, errors, executiveSummary, marketAnalysis, financialAnalysis, technicalAnalysis, riskAssessment } = state;
+  const context = useStudyWizard();
+  const { state, updateData } = context;
+  const { currentStep, steps, isLoading, errors } = state;
+  const { executiveSummary, marketAnalysis, financialAnalysis, technicalAnalysis, riskAssessment } = state.data;
 
   const handleAISuggestionApply = (type: string, data: any) => {
     switch (type) {
       case 'executive_summary':
         if (typeof data === 'string') {
-          dispatch({
-            type: 'UPDATE_EXECUTIVE_SUMMARY',
-            payload: {
-              projectIdea: data.split('\n')[0] || '',
-              objectives: data
+          updateData({
+            executiveSummary: {
+              projectName: data.split('\n')[0] || '',
+              objectives: data.split('\n').filter(line => line.trim()).slice(1).join('\n')
             }
           });
         }
         break;
       case 'market_analysis':
         if (data && typeof data === 'object') {
-          dispatch({
-            type: 'UPDATE_MARKET_ANALYSIS',
-            payload: {
+          updateData({
+            marketAnalysis: {
               marketSize: data.marketSize || '',
               growthRate: data.growthRate || '',
-              keyTrends: data.keyTrends || [],
-              opportunities: data.opportunities || [],
-              challenges: data.challenges || []
+              marketTrends: data.marketTrends || data.keyTrends || [],
+              targetMarket: data.targetMarket || '',
+              customerSegments: data.customerSegments || []
             }
           });
         }
         break;
       case 'risk_assessment':
-        if (Array.isArray(data)) {
-          dispatch({
-            type: 'UPDATE_RISK_ASSESSMENT',
-            payload: {
-              risks: data,
-              overallRiskLevel: 'medium',
-              riskManagementStrategy: 'استراتيجية شاملة لإدارة المخاطر'
-            }
+        if (data && typeof data === 'object') {
+          updateData({
+            riskAssessment: data
           });
         }
         break;

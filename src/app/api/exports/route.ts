@@ -11,15 +11,17 @@ export async function GET(request: NextRequest) {
     }
 
     // Get user's recent export history and sharing data
-    const userProjects = await prisma.project.findMany({
+    const projects = await prisma.project.findMany({
       where: { userId: session.user.id },
       include: {
-        feasibilityStudies: {
+        studies: {
           select: {
             id: true,
             title: true,
+            description: true,
             status: true,
-            createdAt: true
+            createdAt: true,
+            updatedAt: true
           }
         }
       },
@@ -28,8 +30,8 @@ export async function GET(request: NextRequest) {
     });
 
     const exportData = {
-      recentExports: userProjects.flatMap(project => 
-        project.feasibilityStudies.map(study => ({
+      recentExports: projects.flatMap(project => 
+        project.studies.map(study => ({
           id: study.id,
           title: study.title,
           projectName: project.name,
@@ -48,8 +50,8 @@ export async function GET(request: NextRequest) {
       ],
       
       exportStats: {
-        totalExports: userProjects.reduce((sum, p) => sum + p.feasibilityStudies.length, 0) * 3,
-        thisMonth: userProjects.reduce((sum, p) => sum + p.feasibilityStudies.length, 0),
+        totalExports: projects.reduce((sum, p) => sum + p.studies.length, 0) * 3,
+        thisMonth: projects.reduce((sum, p) => sum + p.studies.length, 0),
         mostUsedFormat: 'PDF',
         avgFileSize: '2.1 MB'
       },
@@ -57,9 +59,9 @@ export async function GET(request: NextRequest) {
       shareLinks: [
         {
           id: '1',
-          projectId: userProjects[0]?.id || 'demo',
-          projectName: userProjects[0]?.name || 'مشروع تجريبي',
-          url: `${process.env.NEXTAUTH_URL}/shared/${userProjects[0]?.id || 'demo'}`,
+          projectId: projects[0]?.id || 'demo',
+          projectName: projects[0]?.name || 'مشروع تجريبي',
+          url: `${process.env.NEXTAUTH_URL}/shared/${projects[0]?.id || 'demo'}`,
           permissions: 'view',
           expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
           views: 5,

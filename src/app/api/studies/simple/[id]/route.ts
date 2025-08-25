@@ -1,118 +1,93 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
-// API مبسط لجلب دراسة واحدة للتطوير
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
+    }
+
     const { id } = await params;
     
     console.log('Fetching study with ID:', id);
-    
-    // Mock study data for development
-    const study = {
-      id: id,
-      title: 'دراسة جدوى تجريبية',
-      description: 'هذه دراسة جدوى تجريبية تم إنشاؤها للتطوير والاختبار',
-      type: 'comprehensive',
-      status: 'DRAFT',
-      language: 'ar',
-      aiModel: 'gemini',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      projectId: '1',
-      project: {
-        id: '1',
-        name: 'مشروع تجريبي',
-        industry: 'عام',
-        description: 'مشروع تجريبي للتطوير'
-      },
-      // Mock feasibility study data
-      executiveSummary: {
-        projectIdea: 'فكرة مشروع تجريبية لأغراض التطوير والاختبار',
-        objectives: 'الهدف من هذا المشروع هو اختبار وتطوير النظام',
-        targetAudience: 'المطورون والمختبرون',
-      },
-      marketAnalysis: {
-        marketSize: '100 مليون ريال',
-        growthRate: '15%',
-        customerSegments: [
-          { name: 'الشباب', size: 40, characteristics: 'يفضلون التقنية الحديثة' },
-          { name: 'العائلات', size: 35, characteristics: 'يبحثون عن الجودة والأمان' }
-        ],
-        competitors: [
-          { name: 'منافس أول', marketShare: 25, strengths: 'قوي في التسويق' },
-          { name: 'منافس ثاني', marketShare: 20, strengths: 'أسعار تنافسية' }
-        ]
-      },
-      financialAnalysis: {
-        initialInvestment: 500000,
-        projections: [
-          { year: 1, revenue: 200000, expenses: 150000, profit: 50000 },
-          { year: 2, revenue: 300000, expenses: 200000, profit: 100000 },
-          { year: 3, revenue: 450000, expenses: 280000, profit: 170000 }
-        ],
-        expenseCategories: [
-          { category: 'رواتب', amount: 120000 },
-          { category: 'إيجار', amount: 60000 },
-          { category: 'تسويق', amount: 40000 }
-        ]
-      },
-      technicalAnalysis: {
-        technicalRequirements: [
-          {
-            category: 'الأجهزة والبنية التحتية',
-            requirement: 'خوادم عالية الأداء للتطبيق',
-            priority: 'high',
-            status: 'required'
-          }
-        ],
-        technologies: [
-          {
-            name: 'React.js',
-            category: 'تطوير الواجهة',
-            purpose: 'بناء واجهة المستخدم',
-            alternatives: ['Vue.js', 'Angular']
-          }
-        ],
-        infrastructure: 'بنية تحتية مبنية على الحوسبة السحابية مع خوادم AWS'
-      },
-      riskAssessment: {
-        risks: [
-          {
-            category: 'مالية',
-            description: 'عدم توفر السيولة الكافية',
-            probability: 'medium',
-            impact: 'high',
-            mitigation: 'الحصول على تمويل إضافي',
-            contingency: 'تقليل النفقات التشغيلية'
-          },
-          {
-            category: 'تقنية',
-            description: 'مشاكل في الأداء التقني',
-            probability: 'low',
-            impact: 'medium',
-            mitigation: 'اختبارات شاملة قبل الإطلاق',
-            contingency: 'فريق دعم تقني متخصص'
-          }
-        ],
-        overallRiskLevel: 'medium',
-        riskManagementStrategy: 'استراتيجية شاملة لإدارة المخاطر تشمل المراقبة المستمرة والتقييم الدوري'
-      },
-      review: {
-        studyTitle: 'دراسة جدوى تجريبية شاملة',
-        finalRecommendation: 'نوصي بالمضي قدماً في المشروع مع مراعاة المخاطر المحددة',
-        nextSteps: 'البدء في مرحلة التخطيط التفصيلي وتشكيل الفريق',
-        additionalNotes: 'هذه دراسة تجريبية لأغراض التطوير'
-      }
-    };
 
-    return NextResponse.json(study);
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'المستخدم غير موجود' }, { status: 404 });
+    }
+
+    const study = await prisma.feasibilityStudy.findFirst({
+      where: {
+        id: id,
+        userId: user.id
+      },
+      include: {
+        project: {
+          select: {
+            id: true,
+            name: true,
+            industry: true,
+            description: true
+          }
+        }
+      }
+    });
+
+    if (!study) {
+      return NextResponse.json(
+        { error: 'الدراسة غير موجودة' },
+        { status: 404 }
+      );
+    }
+    // Parse JSON fields if they exist and are strings
+    let parsedStudy = { ...study };
+    
+    if (study.marketAnalysis && typeof study.marketAnalysis === 'string') {
+      try {
+        parsedStudy.marketAnalysis = JSON.parse(study.marketAnalysis);
+      } catch (e) {
+        console.error('Error parsing marketAnalysis:', e);
+      }
+    }
+    
+    if (study.technicalAnalysis && typeof study.technicalAnalysis === 'string') {
+      try {
+        parsedStudy.technicalAnalysis = JSON.parse(study.technicalAnalysis);
+      } catch (e) {
+        console.error('Error parsing technicalAnalysis:', e);
+      }
+    }
+    
+    if (study.financialAnalysis && typeof study.financialAnalysis === 'string') {
+      try {
+        parsedStudy.financialAnalysis = JSON.parse(study.financialAnalysis);
+      } catch (e) {
+        console.error('Error parsing financialAnalysis:', e);
+      }
+    }
+    
+    if (study.riskAnalysis && typeof study.riskAnalysis === 'string') {
+      try {
+        parsedStudy.riskAnalysis = JSON.parse(study.riskAnalysis);
+      } catch (e) {
+        console.error('Error parsing riskAnalysis:', e);
+      }
+    }
+
+    return NextResponse.json(parsedStudy);
   } catch (error) {
     console.error('Error fetching study:', error);
     return NextResponse.json(
-      { error: 'خطأ في جلب الدراسة: ' + error.message },
+      { error: 'خطأ في جلب الدراسة: ' + (error instanceof Error ? error.message : 'خطأ غير معروف') },
       { status: 500 }
     );
   }
@@ -123,23 +98,77 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
+    }
+
     const { id } = await params;
     const body = await request.json();
     
-    console.log('Updating study with ID:', id, 'Data:', body);
-    
-    // Mock updated study for development
-    const updatedStudy = {
-      id: id,
-      ...body,
-      updatedAt: new Date().toISOString(),
-    };
+    console.log('Updating study with ID:', id);
+
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'المستخدم غير موجود' }, { status: 404 });
+    }
+
+    // Verify ownership
+    const existingStudy = await prisma.feasibilityStudy.findFirst({
+      where: {
+        id: id,
+        userId: user.id
+      }
+    });
+
+    if (!existingStudy) {
+      return NextResponse.json(
+        { error: 'الدراسة غير موجودة أو ليس لديك صلاحية التعديل' },
+        { status: 404 }
+      );
+    }
+
+    // Update the study
+    const updatedStudy = await prisma.feasibilityStudy.update({
+      where: { id: id },
+      data: {
+        title: body.title || existingStudy.title,
+        description: body.description !== undefined ? body.description : existingStudy.description,
+        type: body.type || existingStudy.type,
+        status: body.status || existingStudy.status,
+        executiveSummary: body.executiveSummary !== undefined ? body.executiveSummary : existingStudy.executiveSummary,
+        marketAnalysis: body.marketAnalysis !== undefined ? JSON.stringify(body.marketAnalysis) : existingStudy.marketAnalysis,
+        technicalAnalysis: body.technicalAnalysis !== undefined ? JSON.stringify(body.technicalAnalysis) : existingStudy.technicalAnalysis,
+        financialAnalysis: body.financialAnalysis !== undefined ? JSON.stringify(body.financialAnalysis) : existingStudy.financialAnalysis,
+        riskAnalysis: body.riskAnalysis !== undefined ? JSON.stringify(body.riskAnalysis) : existingStudy.riskAnalysis,
+        riskAssessment: body.riskAssessment !== undefined ? body.riskAssessment : existingStudy.riskAssessment,
+        recommendations: body.recommendations !== undefined ? body.recommendations : existingStudy.recommendations,
+        totalCost: body.totalCost !== undefined ? body.totalCost : existingStudy.totalCost,
+        expectedRevenue: body.expectedRevenue !== undefined ? body.expectedRevenue : existingStudy.expectedRevenue,
+        roi: body.roi !== undefined ? body.roi : existingStudy.roi,
+        npv: body.npv !== undefined ? body.npv : existingStudy.npv,
+        irr: body.irr !== undefined ? body.irr : existingStudy.irr,
+        breakEvenPeriod: body.breakEvenPeriod !== undefined ? body.breakEvenPeriod : existingStudy.breakEvenPeriod
+      },
+      include: {
+        project: {
+          select: {
+            id: true,
+            name: true,
+            industry: true
+          }
+        }
+      }
+    });
 
     return NextResponse.json(updatedStudy);
   } catch (error) {
     console.error('Error updating study:', error);
     return NextResponse.json(
-      { error: 'خطأ في تحديث الدراسة: ' + error.message },
+      { error: 'خطأ في تحديث الدراسة: ' + (error instanceof Error ? error.message : 'خطأ غير معروف') },
       { status: 500 }
     );
   }
@@ -150,9 +179,42 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
+    }
+
     const { id } = await params;
     
     console.log('Deleting study with ID:', id);
+
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email }
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'المستخدم غير موجود' }, { status: 404 });
+    }
+
+    // Verify ownership before deletion
+    const study = await prisma.feasibilityStudy.findFirst({
+      where: {
+        id: id,
+        userId: user.id
+      }
+    });
+
+    if (!study) {
+      return NextResponse.json(
+        { error: 'الدراسة غير موجودة أو ليس لديك صلاحية الحذف' },
+        { status: 404 }
+      );
+    }
+
+    // Delete the study
+    await prisma.feasibilityStudy.delete({
+      where: { id: id }
+    });
     
     return NextResponse.json(
       { message: 'تم حذف الدراسة بنجاح' },
@@ -161,7 +223,7 @@ export async function DELETE(
   } catch (error) {
     console.error('Error deleting study:', error);
     return NextResponse.json(
-      { error: 'خطأ في حذف الدراسة: ' + error.message },
+      { error: 'خطأ في حذف الدراسة: ' + (error instanceof Error ? error.message : 'خطأ غير معروف') },
       { status: 500 }
     );
   }

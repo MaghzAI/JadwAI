@@ -5,8 +5,8 @@ import { CheckCircle, Circle, AlertCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function WizardProgress() {
-  const { state, setStep } = useStudyWizard();
-  const { currentStep, steps, progressPercentage, completedStepsCount, totalSteps } = state;
+  const { state, setStep, progressPercentage, completedStepsCount, totalSteps } = useStudyWizard();
+  const { currentStep, steps } = state;
 
   return (
     <div className="w-full bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 p-6">

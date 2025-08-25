@@ -17,10 +17,10 @@ export async function GET(request: NextRequest) {
     const userProjects = await prisma.project.findMany({
       where: { userId: session.user.id },
       include: {
-        feasibilityStudies: true,
+        studies: true,
         _count: {
           select: {
-            feasibilityStudies: true
+            studies: true
           }
         }
       }

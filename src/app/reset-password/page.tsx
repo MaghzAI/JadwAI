@@ -1,18 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import type { Metadata } from 'next';
-import { supabaseAuth } from '@/lib/auth/supabase';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-
-export const metadata: Metadata = {
-  title: 'تعيين كلمة مرور جديدة',
-  description: 'أدخل كلمة مرور جديدة لإكمال عملية الاستعادة',
-};
+import { supabase } from '@/lib/supabase';
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -46,7 +41,10 @@ export default function ResetPasswordPage() {
 
     setLoading(true);
     try {
-      const { error } = await supabaseAuth.updatePassword(password);
+      if (!supabase) {
+        throw new Error('Supabase not configured');
+      }
+      const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
       toast({ title: 'تم التحديث', description: 'تم تعيين كلمة المرور بنجاح. يمكنك تسجيل الدخول الآن.' });
       router.replace('/auth/signin');

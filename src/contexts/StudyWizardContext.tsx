@@ -3,6 +3,93 @@
 import React, { createContext, useContext, useReducer, useCallback, useEffect, ReactNode } from 'react';
 import { toast } from '@/hooks/use-toast';
 
+// Type definitions
+interface ExecutiveSummary {
+  projectName: string;
+  projectType: string;
+  overview: string;
+  objectives: string;
+  targetMarket: string;
+  investmentRange: string;
+  expectedRevenue: string;
+  timeline: string;
+  location: string;
+  keySuccessFactors: string[];
+  competitiveAdvantage: string;
+  projectDescription?: string;
+  keyFindings?: string[];
+  recommendations?: string[];
+  investmentRequired?: number;
+  expectedROI?: number;
+}
+
+interface MarketAnalysis {
+  marketSize: string;
+  growthRate: string;
+  targetMarket: string;
+  customerSegments: any[];
+  competitors: any[];
+  marketTrends: string[] | string;
+  marketBarriers: string[] | string;
+  targetSegments: any[];
+  marketOpportunities: string;
+  seasonality: string;
+  regulatoryEnvironment: string;
+  distributionChannels: string;
+  pricingStrategy: string;
+  marketPenetrationStrategy: string;
+}
+
+interface FinancialAnalysis {
+  initialInvestment: number;
+  workingCapital: number;
+  projectedRevenue: any[];
+  expenseCategories: any[];
+  revenueGrowthRate: number;
+  profitMargin: number;
+  breakEvenPoint: number;
+  returnOnInvestment: number;
+  paybackPeriod: number;
+  netPresentValue: number;
+  fundingSources: string;
+  riskFactors: string;
+  assumptions: string;
+  sensitivityAnalysis: string;
+  projections: any[];
+  breakEvenAnalysis: any;
+  profitabilityAnalysis: any;
+}
+
+interface TechnicalAnalysis {
+  technicalRequirements: any[];
+  infrastructure: string;
+  technologies: any[];
+  implementationPlan: any[];
+  resourceNeeds: any[];
+  qualityAssurance: string;
+  scalabilityPlan: string;
+  securityMeasures: string;
+  maintenancePlan: string;
+  developmentTimeline: string;
+  qualityStandards: string;
+  teamRequirements: string;
+  technicalRisks: string;
+  documentationPlan: string;
+  trainingPlan: string;
+}
+
+interface RiskAssessment {
+  risks: any[];
+  mitigation: any[];
+  contingencyPlan: string;
+  monitoring: string;
+  overallRiskLevel: 'low' | 'medium' | 'high';
+  riskManagementStrategy: string;
+  riskMonitoring: string;
+  successFactors: string;
+  assumptions: string;
+}
+
 // أنواع البيانات للمعالج
 export interface StudyWizardStep {
   id: string;
@@ -25,6 +112,7 @@ export interface StudyWizardData {
 }
 
 export interface StudyWizardState {
+  projectId?: string;
   currentStep: number;
   steps: StudyWizardStep[];
   data: StudyWizardData;
@@ -245,14 +333,14 @@ export function StudyWizardProvider({ children, projectId, initialStudyId }: Stu
   useEffect(() => {
     const timer = setTimeout(() => {
       if (Object.keys(state.data).length > 0) {
-        saveDraft();
+        saveDraftLocally();
       }
     }, 5000); // Auto-save every 5 seconds
 
     return () => clearTimeout(timer);
   }, [state.data]);
 
-  const saveDraft = () => {
+  const saveDraftLocally = () => {
     try {
       const draftData = {
         data: state.data,

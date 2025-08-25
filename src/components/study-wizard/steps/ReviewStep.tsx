@@ -22,17 +22,20 @@ export default function ReviewStep() {
   });
 
   useEffect(() => {
-    const existingData = state.data.review;
-    if (existingData) {
-      setFormData(existingData);
+    // Load existing data if available
+    if (state.data.executiveSummary?.projectName) {
+      setFormData(prev => ({
+        ...prev,
+        studyTitle: `دراسة جدوى ${state.data.executiveSummary?.projectName}`,
+      }));
     }
-  }, [state.data.review]);
+  }, [state.data.executiveSummary]);
 
   useEffect(() => {
     const isValid = validateForm();
-    const isCompleted = isValid && formData.studyTitle.trim() && formData.finalRecommendation.trim();
+    const isCompleted = Boolean(isValid && formData.studyTitle.trim() && formData.finalRecommendation.trim());
     
-    updateData({ review: formData });
+    // Review data is internal to this step only
     updateStepStatus(5, isCompleted, isValid);
   }, [formData, updateData, updateStepStatus]);
 
@@ -65,8 +68,8 @@ export default function ReviewStep() {
     const financial = state.data.financialAnalysis;
     if (!financial) return null;
 
-    const totalRevenue = financial.projections?.reduce((sum, proj) => sum + (proj.revenue || 0), 0) || 0;
-    const totalExpenses = financial.expenseCategories?.reduce((sum, cat) => sum + (cat.amount || 0), 0) || 0;
+    const totalRevenue = financial.projections?.reduce((sum: number, proj: any) => sum + (proj.revenue || 0), 0) || 0;
+    const totalExpenses = financial.expenseCategories?.reduce((sum: number, cat: any) => sum + (cat.amount || 0), 0) || 0;
     const initialInvestment = financial.initialInvestment || 0;
 
     return {
@@ -85,18 +88,18 @@ export default function ReviewStep() {
     const risks = state.data.riskAssessment?.risks || [];
     return {
       total: risks.length,
-      high: risks.filter(risk => {
+      high: risks.filter((risk: any) => {
         const probValue = risk.probability === 'low' ? 1 : risk.probability === 'medium' ? 2 : 3;
         const impactValue = risk.impact === 'low' ? 1 : risk.impact === 'medium' ? 2 : 3;
         return probValue * impactValue >= 6;
       }).length,
-      medium: risks.filter(risk => {
+      medium: risks.filter((risk: any) => {
         const probValue = risk.probability === 'low' ? 1 : risk.probability === 'medium' ? 2 : 3;
         const impactValue = risk.impact === 'low' ? 1 : risk.impact === 'medium' ? 2 : 3;
         const score = probValue * impactValue;
         return score >= 3 && score < 6;
       }).length,
-      low: risks.filter(risk => {
+      low: risks.filter((risk: any) => {
         const probValue = risk.probability === 'low' ? 1 : risk.probability === 'medium' ? 2 : 3;
         const impactValue = risk.impact === 'low' ? 1 : risk.impact === 'medium' ? 2 : 3;
         return probValue * impactValue < 3;
@@ -163,21 +166,21 @@ export default function ReviewStep() {
             <div>
               <h4 className="font-medium text-gray-900 dark:text-white mb-2">فكرة المشروع</h4>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                {state.data.executiveSummary.projectIdea || 'غير محدد'}
+                {state.data.executiveSummary?.projectName || 'غير محدد'}
               </p>
             </div>
             <Separator />
             <div>
               <h4 className="font-medium text-gray-900 dark:text-white mb-2">الأهداف</h4>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                {state.data.executiveSummary.objectives || 'غير محدد'}
+                {state.data.executiveSummary?.objectives || 'غير محدد'}
               </p>
             </div>
             <Separator />
             <div>
               <h4 className="font-medium text-gray-900 dark:text-white mb-2">الجمهور المستهدف</h4>
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                {state.data.executiveSummary.targetAudience || 'غير محدد'}
+                {state.data.executiveSummary?.targetMarket || 'غير محدد'}
               </p>
             </div>
           </CardContent>
@@ -217,7 +220,7 @@ export default function ReviewStep() {
             <div>
               <h4 className="font-medium text-gray-900 dark:text-white mb-2">المنافسون الرئيسيون</h4>
               <div className="flex flex-wrap gap-2">
-                {state.data.marketAnalysis.competitors?.slice(0, 5).map((competitor, idx) => (
+                {state.data.marketAnalysis.competitors?.slice(0, 5).map((competitor: any, idx: number) => (
                   <Badge key={idx} variant="outline">
                     {competitor.name}
                   </Badge>
@@ -288,7 +291,7 @@ export default function ReviewStep() {
             <div>
               <h4 className="font-medium text-gray-900 dark:text-white mb-2">التقنيات المستخدمة</h4>
               <div className="flex flex-wrap gap-2">
-                {state.data.technicalAnalysis.technologies?.slice(0, 6).map((tech, idx) => (
+                {state.data.technicalAnalysis.technologies?.slice(0, 6).map((tech: any, idx: number) => (
                   <Badge key={idx} variant="secondary">
                     {tech.name}
                   </Badge>

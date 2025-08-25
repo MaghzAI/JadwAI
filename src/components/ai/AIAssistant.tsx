@@ -134,7 +134,7 @@ export function AIAssistant({ currentStep, studyData, onSuggestionApply }: AIAss
     }, 1500);
   };
 
-  const handleSuggestionClick = async (suggestion: Message['suggestions'][0]) => {
+  const handleSuggestionClick = async (suggestion: NonNullable<Message['suggestions']>[0]) => {
     if (!suggestion) return;
 
     setIsLoading(true);
@@ -174,7 +174,7 @@ export function AIAssistant({ currentStep, studyData, onSuggestionApply }: AIAss
       const errorMessage: Message = {
         id: Date.now().toString(),
         type: 'assistant',
-        content: `عذراً، حدث خطأ أثناء توليد المحتوى: ${error.message}. سأستخدم نماذج افتراضية بدلاً من ذلك.`,
+        content: `عذراً، حدث خطأ أثناء توليد المحتوى: ${error instanceof Error ? error.message : 'خطأ غير معروف'}. سأستخدم نماذج افتراضية بدلاً من ذلك.`,
         timestamp: new Date()
       };
       setMessages(prev => [...prev, errorMessage]);
